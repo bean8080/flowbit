@@ -1,0 +1,10 @@
+POST http://localhost:8080/tasks
+Content-Type: application/json
+
+{
+  "projectId": 1,
+  "title": "플로빗 첫 작업",
+  "description": "Task 생성 테스트",
+  "assigneeId": 1,
+  "priority": 1
+}
