@@ -1,6 +1,7 @@
 package com.ahyeon.flowbit.domain.task;
 
 import com.ahyeon.flowbit.domain.task.dto.CreateTaskRequest;
+import com.ahyeon.flowbit.domain.task.dto.TaskResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -28,12 +29,17 @@ public class TaskService {
         taskRepository.save(task);
     }
 
-    public List<Task> getAllTasks() {
-        return taskRepository.findAll();
+    public List<TaskResponse> getAllTasks() {
+        return taskRepository.findAll()
+                .stream()
+                .map(TaskResponse::new)
+                .toList();
     }
 
-    public Task getTask(Long id) {
-        return taskRepository.findById(id)
+    public TaskResponse getTask(Long id) {
+        Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Task not found"));
+
+        return new TaskResponse(task);
     }
 }

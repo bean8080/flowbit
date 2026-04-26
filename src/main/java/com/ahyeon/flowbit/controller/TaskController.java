@@ -3,6 +3,7 @@ package com.ahyeon.flowbit.controller;
 import com.ahyeon.flowbit.domain.task.Task;
 import com.ahyeon.flowbit.domain.task.TaskService;
 import com.ahyeon.flowbit.domain.task.dto.CreateTaskRequest;
+import com.ahyeon.flowbit.domain.task.dto.TaskResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,12 +22,12 @@ public class TaskController {
     }
 
     @GetMapping
-    public List<Task> getAllTasks() {
+    public List<TaskResponse> getAllTasks() {
         return taskService.getAllTasks();
     }
 
     @GetMapping("/{id}")
-    public Task getTask(@PathVariable Long id) {
+    public TaskResponse getTask(@PathVariable Long id) {
         return taskService.getTask(id);
     }
 }
