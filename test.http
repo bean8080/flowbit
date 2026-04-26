@@ -1,4 +1,4 @@
-### Task 생성 API (POST)
+### [CREATE] Task 생성
 POST http://localhost:8080/tasks
 Content-Type: application/json
 
