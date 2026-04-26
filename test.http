@@ -10,6 +10,18 @@ Content-Type: application/json
   "priority": 1
 }
 
+### [CREATE] Task 생성 2
+POST http://localhost:8080/tasks
+Content-Type: application/json
+
+{
+  "projectId": 1,
+  "title": "플로빗 두번째 작업",
+  "description": "Task 생성 테스트 2",
+  "assigneeId": 2,
+  "priority": 2
+}
+
 ### [READ] Task 전체 조회
 GET http://localhost:8080/tasks
 
