@@ -51,4 +51,18 @@ public class Task {
         this.priority = priority;
         this.createdAt = createdAt;
     }
+
+    public void start(LocalDateTime startedAt) {
+        this.status = TaskStatus.IN_PROGRESS;
+        this.startedAt = startedAt;
+    }
+
+    public void complete(LocalDateTime now) {
+        if (this.status != TaskStatus.IN_PROGRESS) {
+            throw new IllegalStateException("진행 중인 작업만 완료할 수 있습니다.");
+        }
+
+        this.status = TaskStatus.DONE;
+        this.completedAt = now;
+    }
 }

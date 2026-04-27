@@ -4,6 +4,7 @@ import com.ahyeon.flowbit.domain.task.Task;
 import com.ahyeon.flowbit.domain.task.TaskService;
 import com.ahyeon.flowbit.domain.task.dto.CreateTaskRequest;
 import com.ahyeon.flowbit.domain.task.dto.TaskResponse;
+import com.ahyeon.flowbit.domain.task.dto.TaskEventResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,5 +30,20 @@ public class TaskController {
     @GetMapping("/{id}")
     public TaskResponse getTask(@PathVariable Long id) {
         return taskService.getTask(id);
+    }
+
+    @PatchMapping("/{id}/start")
+    public TaskResponse startTask(@PathVariable Long id) {
+        return taskService.startTask(id);
+    }
+
+    @GetMapping("/{id}/events")
+    public List<TaskEventResponse> getTaskEvents(@PathVariable Long id) {
+        return taskService.getTaskEvents(id);
+    }
+
+    @PatchMapping("/{id}/complete")
+    public TaskResponse completeTask(@PathVariable Long id) {
+        return taskService.completeTask(id);
     }
 }

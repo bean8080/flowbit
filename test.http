@@ -1,4 +1,4 @@
-### [CREATE] Task 생성
+### [1] Task 생성 - 첫 번째 작업
 POST http://localhost:8080/tasks
 Content-Type: application/json
 
@@ -10,7 +10,7 @@ Content-Type: application/json
   "priority": 1
 }
 
-### [CREATE] Task 생성 2
+### [2] Task 생성 - 두 번째 작업
 POST http://localhost:8080/tasks
 Content-Type: application/json
 
@@ -22,8 +22,17 @@ Content-Type: application/json
   "priority": 2
 }
 
-### [READ] Task 전체 조회
+### [3] Task 전체 조회
 GET http://localhost:8080/tasks
 
-### [READ] Task 단건 조회
+### [4] Task 단건 조회
 GET http://localhost:8080/tasks/1
+
+### [5] Task 시작 - TODO → IN_PROGRESS
+PATCH http://localhost:8080/tasks/1/start
+
+### [6] Task 완료 - IN_PROGRESS → DONE
+PATCH http://localhost:8080/tasks/1/complete
+
+### [7] Task 이벤트 조회
+GET http://localhost:8080/tasks/1/events
