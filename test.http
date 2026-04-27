@@ -39,3 +39,21 @@ GET http://localhost:8080/tasks/1/events
 
 ### [8] Task 보류 - TODO / IN_PROGRESS → BLOCKED
 PATCH http://localhost:8080/tasks/1/block
+
+### [3] Task 생성 - 세 번째 작업
+POST http://localhost:8080/tasks
+Content-Type: application/json
+
+{
+  "projectId": 3,
+  "title": "플로빗 세번째 작업",
+  "description": "Task 생성 테스트 3",
+  "assigneeId": 3,
+  "priority": 3
+}
+
+### [9] Task 삭제 - 모든 상태 → DELETED (soft delete)
+PATCH http://localhost:8080/tasks/7/delete
+
+### [10] Task 이벤트 조회 (삭제 이벤트 포함 확인)
+GET http://localhost:8080/tasks/7/events

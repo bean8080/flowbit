@@ -73,4 +73,9 @@ public class Task {
 
         this.status = TaskStatus.BLOCKED;
     }
+
+    public void delete(LocalDateTime now) {
+        this.status = TaskStatus.DELETED;
+        this.deletedAt = now;
+    }
 }

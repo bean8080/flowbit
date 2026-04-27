@@ -51,4 +51,9 @@ public class TaskController {
     public TaskResponse blockTask(@PathVariable Long id) {
         return taskService.blockTask(id);
     }
+
+    @PatchMapping("/{id}/delete")
+    public TaskResponse deleteTask(@PathVariable Long id) {
+        return taskService.deleteTask(id);
+    }
 }
