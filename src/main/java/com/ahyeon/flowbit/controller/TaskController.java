@@ -46,4 +46,9 @@ public class TaskController {
     public TaskResponse completeTask(@PathVariable Long id) {
         return taskService.completeTask(id);
     }
+
+    @PatchMapping("/{id}/block")
+    public TaskResponse blockTask(@PathVariable Long id) {
+        return taskService.blockTask(id);
+    }
 }

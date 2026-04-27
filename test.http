@@ -15,7 +15,7 @@ POST http://localhost:8080/tasks
 Content-Type: application/json
 
 {
-  "projectId": 1,
+  "projectId": 2,
   "title": "플로빗 두번째 작업",
   "description": "Task 생성 테스트 2",
   "assigneeId": 2,
@@ -36,3 +36,6 @@ PATCH http://localhost:8080/tasks/1/complete
 
 ### [7] Task 이벤트 조회
 GET http://localhost:8080/tasks/1/events
+
+### [8] Task 보류 - TODO / IN_PROGRESS → BLOCKED
+PATCH http://localhost:8080/tasks/1/block

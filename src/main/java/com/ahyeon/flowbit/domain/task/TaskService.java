@@ -119,4 +119,29 @@ public class TaskService {
 
         return new TaskResponse(task);
     }
+
+    public TaskResponse blockTask(Long id) {
+        Task task = taskRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("작업을 찾을 수 없습니다."));
+
+        TaskStatus fromStatus = task.getStatus();
+
+        LocalDateTime now = LocalDateTime.now();
+
+        task.block();
+
+        TaskEvent event = new TaskEvent(
+                task.getId(),
+                TaskEventType.BLOCKED,
+                fromStatus,
+                TaskStatus.BLOCKED,
+                "Task blocked",
+                now,
+                null
+        );
+
+        taskEventRepository.save(event);
+
+        return new TaskResponse(task);
+    }
 }

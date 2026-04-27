@@ -65,4 +65,12 @@ public class Task {
         this.status = TaskStatus.DONE;
         this.completedAt = now;
     }
+
+    public void block() {
+        if (this.status == TaskStatus.DONE || this.status == TaskStatus.DELETED) {
+            throw new IllegalStateException("완료되었거나 삭제된 작업은 보류할 수 없습니다.");
+        }
+
+        this.status = TaskStatus.BLOCKED;
+    }
 }
