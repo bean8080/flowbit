@@ -40,7 +40,7 @@ GET http://localhost:8080/tasks/1/events
 ### [8] Task 보류 - TODO / IN_PROGRESS → BLOCKED
 PATCH http://localhost:8080/tasks/1/block
 
-### [3] Task 생성 - 세 번째 작업
+### [9] Task 생성 - 세 번째 작업
 POST http://localhost:8080/tasks
 Content-Type: application/json
 
@@ -52,8 +52,8 @@ Content-Type: application/json
   "priority": 3
 }
 
-### [9] Task 삭제 - 모든 상태 → DELETED (soft delete)
+### [10] Task 삭제 - 모든 상태 → DELETED (soft delete)
 PATCH http://localhost:8080/tasks/7/delete
 
-### [10] Task 이벤트 조회 (삭제 이벤트 포함 확인)
+### [11] Task 이벤트 조회 (삭제 이벤트 포함 확인)
 GET http://localhost:8080/tasks/7/events
