@@ -60,4 +60,9 @@ public class TaskController {
     public TaskResponse deleteTask(@PathVariable Long id) {
         return taskService.deleteTask(id);
     }
+
+    @GetMapping("/{id}/latest-status")
+    public String getLatestStatus(@PathVariable Long id) {
+        return taskService.getLatestStatusFromEvents(id);
+    }
 }

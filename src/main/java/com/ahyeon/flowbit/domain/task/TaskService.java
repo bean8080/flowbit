@@ -183,4 +183,14 @@ public class TaskService {
 
         return new TaskResponse(task);
     }
+
+    public String getLatestStatusFromEvents(Long taskId) {
+        taskRepository.findById(taskId)
+                .orElseThrow(() -> new IllegalArgumentException("작업을 찾을 수 없습니다."));
+
+        TaskEvent latestEvent = taskEventRepository.findTopByTaskIdOrderByCreatedAtDesc(taskId)
+                .orElseThrow(() -> new IllegalStateException("이벤트가 존재하지 않습니다."));
+
+        return latestEvent.getToStatus().name();
+    }
 }

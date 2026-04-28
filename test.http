@@ -62,13 +62,13 @@ PATCH http://localhost:8080/tasks/1/block
 PATCH http://localhost:8080/tasks/1/complete
 
 ### Task 삭제 - 모든 상태 → DELETED (soft delete)
-PATCH http://localhost:8080/tasks/7/delete
+PATCH http://localhost:8080/tasks/1/delete
 
 ### Task 이벤트 조회
 GET http://localhost:8080/tasks/1/events
 
 ### Task 이벤트 조회 (삭제 이벤트 포함 확인)
-GET http://localhost:8080/tasks/7/events
+GET http://localhost:8080/tasks/1/events
 
 ### 전체 Task 조회 - 삭제된 작업 제외
 GET http://localhost:8080/tasks
@@ -99,3 +99,6 @@ GET http://localhost:8080/tasks/1/events
 
 ### 존재하지 않는 Task 이벤트 조회
 GET http://localhost:8080/tasks/999/events
+
+### 이벤트 기준 최신 상태 조회
+GET http://localhost:8080/tasks/1/latest-status
