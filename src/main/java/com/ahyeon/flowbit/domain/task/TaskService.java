@@ -100,6 +100,9 @@ public class TaskService {
     }
 
     public List<TaskEventResponse> getTaskEvents(Long taskId) {
+        taskRepository.findById(taskId)
+                .orElseThrow(() -> new IllegalArgumentException("작업을 찾을 수 없습니다."));
+
         return taskEventRepository.findByTaskIdOrderByCreatedAtAsc(taskId)
                 .stream()
                 .map(TaskEventResponse::new)

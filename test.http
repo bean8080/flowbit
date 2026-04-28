@@ -93,3 +93,9 @@ GET http://localhost:8080/tasks?projectId=1&status=TODO
 
 ### 프로젝트 + 진행중 상태 Task 조회
 GET http://localhost:8080/tasks?projectId=1&status=IN_PROGRESS
+
+### 존재하는 Task 이벤트 조회
+GET http://localhost:8080/tasks/1/events
+
+### 존재하지 않는 Task 이벤트 조회
+GET http://localhost:8080/tasks/999/events
