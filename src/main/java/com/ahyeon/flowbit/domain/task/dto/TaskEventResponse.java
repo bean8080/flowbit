@@ -16,9 +16,6 @@ public class TaskEventResponse {
     private String description;
     private LocalDateTime createdAt;
 
-    private String label;
-    private String summary;
-
     public TaskEventResponse(TaskEvent event) {
         this.id = event.getId();
         this.taskId = event.getTaskId();
@@ -27,24 +24,5 @@ public class TaskEventResponse {
         this.toStatus = event.getToStatus().name();
         this.description = event.getDescription();
         this.createdAt = event.getCreatedAt();
-
-        this.label = createLabel();
-        this.summary = createSummary();
-    }
-
-    private String createLabel() {
-        if (fromStatus == null) {
-            return eventType + " → " + toStatus;
-        }
-
-        return eventType + " (" + fromStatus + " → " + toStatus + ")";
-    }
-
-    private String createSummary() {
-        if (fromStatus == null) {
-            return "작업이 " + toStatus + " 상태로 생성되었습니다.";
-        }
-
-        return "작업 상태가 " + fromStatus + "에서 " + toStatus + "로 변경되었습니다.";
     }
 }

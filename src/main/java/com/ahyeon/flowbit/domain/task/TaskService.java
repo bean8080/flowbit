@@ -3,6 +3,7 @@ package com.ahyeon.flowbit.domain.task;
 import com.ahyeon.flowbit.domain.task.dto.CreateTaskRequest;
 import com.ahyeon.flowbit.domain.task.dto.TaskResponse;
 import com.ahyeon.flowbit.domain.task.dto.TaskEventResponse;
+import com.ahyeon.flowbit.domain.task.dto.TaskTimelineResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -194,13 +195,13 @@ public class TaskService {
         return latestEvent.getToStatus().name();
     }
 
-    public List<TaskEventResponse> getTimeline(Long taskId) {
+    public List<TaskTimelineResponse> getTimeline(Long taskId) {
         taskRepository.findById(taskId)
                 .orElseThrow(() -> new IllegalArgumentException("작업을 찾을 수 없습니다."));
 
         return taskEventRepository.findByTaskIdOrderByCreatedAtAsc(taskId)
                 .stream()
-                .map(TaskEventResponse::new)
+                .map(TaskTimelineResponse::new)
                 .toList();
     }
 }

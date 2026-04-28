@@ -1,11 +1,11 @@
 package com.ahyeon.flowbit.controller;
 
-import com.ahyeon.flowbit.domain.task.Task;
 import com.ahyeon.flowbit.domain.task.TaskService;
 import com.ahyeon.flowbit.domain.task.TaskStatus;
 import com.ahyeon.flowbit.domain.task.dto.CreateTaskRequest;
 import com.ahyeon.flowbit.domain.task.dto.TaskResponse;
 import com.ahyeon.flowbit.domain.task.dto.TaskEventResponse;
+import com.ahyeon.flowbit.domain.task.dto.TaskTimelineResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -67,7 +67,7 @@ public class TaskController {
     }
 
     @GetMapping("/{id}/timeline")
-    public List<TaskEventResponse> getTimeline(@PathVariable Long id) {
+    public List<TaskTimelineResponse> getTimeline(@PathVariable Long id) {
         return taskService.getTimeline(id);
     }
 }
