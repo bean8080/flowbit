@@ -45,10 +45,18 @@ public class TaskService {
         taskEventRepository.save(event);
     }
 
-    public List<TaskResponse> getTasks(TaskStatus status) {
-        List<Task> tasks = status == null
-                ? taskRepository.findByStatusNot(TaskStatus.DELETED)
-                : taskRepository.findByStatus(status);
+    public List<TaskResponse> getTasks(TaskStatus status, Long projectId) {
+        List<Task> tasks;
+
+        if (projectId != null && status != null) {
+            tasks = taskRepository.findByProjectIdAndStatus(projectId, status);
+        } else if (projectId != null) {
+            tasks = taskRepository.findByProjectIdAndStatusNot(projectId, TaskStatus.DELETED);
+        } else if (status != null) {
+            tasks = taskRepository.findByStatus(status);
+        } else {
+            tasks = taskRepository.findByStatusNot(TaskStatus.DELETED);
+        }
 
         return tasks.stream()
                 .map(TaskResponse::new)

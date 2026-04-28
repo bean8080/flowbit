@@ -72,3 +72,12 @@ GET http://localhost:8080/tasks?status=BLOCKED
 
 ### DONE 상태 Task 조회
 GET http://localhost:8080/tasks?status=DONE
+
+### 프로젝트별 Task 조회
+GET http://localhost:8080/tasks?projectId=1
+
+### 프로젝트 + 상태 조건 Task 조회
+GET http://localhost:8080/tasks?projectId=1&status=TODO
+
+### 프로젝트 + 진행중 상태 Task 조회
+GET http://localhost:8080/tasks?projectId=1&status=IN_PROGRESS
