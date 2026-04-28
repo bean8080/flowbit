@@ -3,11 +3,13 @@ package com.ahyeon.flowbit.domain.task;
 import com.ahyeon.flowbit.domain.task.dto.CreateTaskRequest;
 import com.ahyeon.flowbit.domain.task.dto.TaskResponse;
 import com.ahyeon.flowbit.domain.task.dto.TaskEventResponse;
+import com.ahyeon.flowbit.domain.task.dto.TaskTimelineResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.ArrayList;
 
 @Service
 @RequiredArgsConstructor
@@ -194,13 +196,20 @@ public class TaskService {
         return latestEvent.getToStatus().name();
     }
 
-    public List<TaskEventResponse> getTimeline(Long taskId) {
+    public List<TaskTimelineResponse> getTimeline(Long taskId) {
         taskRepository.findById(taskId)
                 .orElseThrow(() -> new IllegalArgumentException("작업을 찾을 수 없습니다."));
 
-        return taskEventRepository.findByTaskIdOrderByCreatedAtAsc(taskId)
-                .stream()
-                .map(TaskEventResponse::new)
-                .toList();
+        List<TaskEvent> events = taskEventRepository.findByTaskIdOrderByCreatedAtAsc(taskId);
+
+        List<TaskTimelineResponse> timeline = new ArrayList<>();
+
+        for (int i = 0; i < events.size(); i++) {
+            LocalDateTime previousOccurredAt = i == 0 ? null : events.get(i - 1).getCreatedAt();
+
+            timeline.add(new TaskTimelineResponse(events.get(i), previousOccurredAt));
+        }
+
+        return timeline;
     }
 }
