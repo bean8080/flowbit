@@ -1,4 +1,4 @@
-### [1] Task 생성 - 첫 번째 작업
+### Task 생성 - 첫 번째 작업
 POST http://localhost:8080/tasks
 Content-Type: application/json
 
@@ -10,7 +10,7 @@ Content-Type: application/json
   "priority": 1
 }
 
-### [2] Task 생성 - 두 번째 작업
+### Task 생성 - 두 번째 작업
 POST http://localhost:8080/tasks
 Content-Type: application/json
 
@@ -22,40 +22,52 @@ Content-Type: application/json
   "priority": 2
 }
 
-### [3] Task 전체 조회
-GET http://localhost:8080/tasks
-
-### [4] Task 단건 조회
-GET http://localhost:8080/tasks/1
-
-### [5] Task 시작 - TODO → IN_PROGRESS
-PATCH http://localhost:8080/tasks/1/start
-
-### [6] Task 완료 - IN_PROGRESS → DONE
-PATCH http://localhost:8080/tasks/1/complete
-
-### [7] Task 이벤트 조회
-GET http://localhost:8080/tasks/1/events
-
-### [8] Task 보류 - TODO / IN_PROGRESS → BLOCKED
-PATCH http://localhost:8080/tasks/1/block
-
-### [9] Task 생성 - 세 번째 작업
+### Task 생성 - 세 번째 작업
 POST http://localhost:8080/tasks
 Content-Type: application/json
 
 {
-  "projectId": 3,
-  "title": "플로빗 세번째 작업",
-  "description": "Task 생성 테스트 3",
-  "assigneeId": 3,
-  "priority": 3
+"projectId": 3,
+"title": "플로빗 세번째 작업",
+"description": "Task 생성 테스트 3",
+"assigneeId": 3,
+"priority": 3
 }
 
-### [10] Task 삭제 - 모든 상태 → DELETED (soft delete)
+### Task 생성 - 네 번째 작업
+POST http://localhost:8080/tasks
+Content-Type: application/json
+
+{
+  "projectId": 1,
+  "title": "플로빗 네번째 작업",
+  "description": "Task 생성 테스트 4",
+  "assigneeId": 4,
+  "priority": 4
+}
+
+### Task 전체 조회
+GET http://localhost:8080/tasks
+
+### Task 단건 조회
+GET http://localhost:8080/tasks/1
+
+### Task 시작 - TODO → IN_PROGRESS
+PATCH http://localhost:8080/tasks/1/start
+
+### Task 보류 - TODO / IN_PROGRESS → BLOCKED
+PATCH http://localhost:8080/tasks/1/block
+
+### Task 완료 - IN_PROGRESS → DONE
+PATCH http://localhost:8080/tasks/1/complete
+
+### Task 삭제 - 모든 상태 → DELETED (soft delete)
 PATCH http://localhost:8080/tasks/7/delete
 
-### [11] Task 이벤트 조회 (삭제 이벤트 포함 확인)
+### Task 이벤트 조회
+GET http://localhost:8080/tasks/1/events
+
+### Task 이벤트 조회 (삭제 이벤트 포함 확인)
 GET http://localhost:8080/tasks/7/events
 
 ### 전체 Task 조회 - 삭제된 작업 제외
