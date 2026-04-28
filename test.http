@@ -57,3 +57,18 @@ PATCH http://localhost:8080/tasks/7/delete
 
 ### [11] Task 이벤트 조회 (삭제 이벤트 포함 확인)
 GET http://localhost:8080/tasks/7/events
+
+### 전체 Task 조회 - 삭제된 작업 제외
+GET http://localhost:8080/tasks
+
+### TODO 상태 Task 조회
+GET http://localhost:8080/tasks?status=TODO
+
+### IN_PROGRESS 상태 Task 조회
+GET http://localhost:8080/tasks?status=IN_PROGRESS
+
+### BLOCKED 상태 Task 조회
+GET http://localhost:8080/tasks?status=BLOCKED
+
+### DONE 상태 Task 조회
+GET http://localhost:8080/tasks?status=DONE

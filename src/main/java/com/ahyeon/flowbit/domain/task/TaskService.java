@@ -45,9 +45,12 @@ public class TaskService {
         taskEventRepository.save(event);
     }
 
-    public List<TaskResponse> getAllTasks() {
-        return taskRepository.findAll()
-                .stream()
+    public List<TaskResponse> getTasks(TaskStatus status) {
+        List<Task> tasks = status == null
+                ? taskRepository.findByStatusNot(TaskStatus.DELETED)
+                : taskRepository.findByStatus(status);
+
+        return tasks.stream()
                 .map(TaskResponse::new)
                 .toList();
     }

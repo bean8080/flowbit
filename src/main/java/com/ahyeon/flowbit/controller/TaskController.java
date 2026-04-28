@@ -2,6 +2,7 @@ package com.ahyeon.flowbit.controller;
 
 import com.ahyeon.flowbit.domain.task.Task;
 import com.ahyeon.flowbit.domain.task.TaskService;
+import com.ahyeon.flowbit.domain.task.TaskStatus;
 import com.ahyeon.flowbit.domain.task.dto.CreateTaskRequest;
 import com.ahyeon.flowbit.domain.task.dto.TaskResponse;
 import com.ahyeon.flowbit.domain.task.dto.TaskEventResponse;
@@ -23,8 +24,8 @@ public class TaskController {
     }
 
     @GetMapping
-    public List<TaskResponse> getAllTasks() {
-        return taskService.getAllTasks();
+    public List<TaskResponse> getTasks(@RequestParam(required = false) TaskStatus status) {
+        return taskService.getTasks(status);
     }
 
     @GetMapping("/{id}")
