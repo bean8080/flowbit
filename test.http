@@ -102,3 +102,6 @@ GET http://localhost:8080/tasks/999/events
 
 ### 이벤트 기준 최신 상태 조회
 GET http://localhost:8080/tasks/1/latest-status
+
+### Task 타임라인 조회 - 상태 변화 흐름을 시간 순으로 확인
+GET http://localhost:8080/tasks/1/timeline

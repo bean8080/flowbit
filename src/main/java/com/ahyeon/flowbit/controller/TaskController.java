@@ -65,4 +65,9 @@ public class TaskController {
     public String getLatestStatus(@PathVariable Long id) {
         return taskService.getLatestStatusFromEvents(id);
     }
+
+    @GetMapping("/{id}/timeline")
+    public List<TaskEventResponse> getTimeline(@PathVariable Long id) {
+        return taskService.getTimeline(id);
+    }
 }
