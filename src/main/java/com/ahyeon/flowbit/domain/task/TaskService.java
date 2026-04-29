@@ -1,9 +1,12 @@
 package com.ahyeon.flowbit.domain.task;
 
+import com.ahyeon.flowbit.domain.project.Project;
+import com.ahyeon.flowbit.domain.project.ProjectRepository;
 import com.ahyeon.flowbit.domain.task.dto.CreateTaskRequest;
 import com.ahyeon.flowbit.domain.task.dto.TaskResponse;
 import com.ahyeon.flowbit.domain.task.dto.TaskEventResponse;
 import com.ahyeon.flowbit.domain.task.dto.TaskTimelineResponse;
+import com.ahyeon.flowbit.domain.project.ProjectService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -17,13 +20,26 @@ public class TaskService {
 
     private final TaskRepository taskRepository;
     private final TaskEventRepository taskEventRepository;
+    private final ProjectRepository projectRepository;
+    private final ProjectService projectService;
 
     public void createTask(CreateTaskRequest request) {
 
         LocalDateTime now = LocalDateTime.now();
 
+        Long projectId;
+
+        if (request.getProjectId() == null) {
+            Project defaultProject = projectService.getOrCreateDefaultProject();
+            projectId = defaultProject.getId();
+        } else {
+            projectId = projectRepository.findById(request.getProjectId())
+                    .orElseThrow(() -> new IllegalArgumentException("프로젝트를 찾을 수 없습니다."))
+                    .getId();
+        }
+
         Task task = new Task(
-                request.getProjectId(),
+                projectId,
                 request.getTitle(),
                 request.getDescription(),
                 TaskStatus.TODO,

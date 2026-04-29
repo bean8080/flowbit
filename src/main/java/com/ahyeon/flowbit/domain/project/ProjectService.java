@@ -41,4 +41,18 @@ public class ProjectService {
 
         return new ProjectResponse(project);
     }
+
+    public Project getOrCreateDefaultProject() {
+
+        return projectRepository.findByName("DEFAULT")
+                .orElseGet(() -> {
+                    Project defaultProject = new Project(
+                            "DEFAULT",
+                            "기본 프로젝트",
+                            ProjectStatus.READY,
+                            LocalDateTime.now()
+                    );
+                    return projectRepository.save(defaultProject);
+                });
+    }
 }
