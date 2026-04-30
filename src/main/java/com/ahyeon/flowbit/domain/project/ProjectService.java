@@ -65,7 +65,7 @@ public class ProjectService {
         projectRepository.findById(projectId)
                 .orElseThrow(() -> new IllegalArgumentException("프로젝트를 찾을 수 없습니다."));
 
-        List<Task> tasks = taskRepository.findByProjectIdAndStatusNot(projectId, TaskStatus.DELETED);
+        List<Task> tasks = taskRepository.findByProject_IdAndStatusNot(projectId, TaskStatus.DELETED);
 
         List<Long> taskIds = tasks.stream()
                 .map(Task::getId)
