@@ -27,19 +27,17 @@ public class TaskService {
 
         LocalDateTime now = LocalDateTime.now();
 
-        Long projectId;
+        Project project;
 
         if (request.getProjectId() == null) {
-            Project defaultProject = projectService.getOrCreateDefaultProject();
-            projectId = defaultProject.getId();
+            project = projectService.getOrCreateDefaultProject();
         } else {
-            projectId = projectRepository.findById(request.getProjectId())
-                    .orElseThrow(() -> new IllegalArgumentException("프로젝트를 찾을 수 없습니다."))
-                    .getId();
+            project = projectRepository.findById(request.getProjectId())
+                    .orElseThrow(() -> new IllegalArgumentException("프로젝트를 찾을 수 없습니다."));
         }
 
         Task task = new Task(
-                projectId,
+                project,
                 request.getTitle(),
                 request.getDescription(),
                 TaskStatus.TODO,
@@ -67,9 +65,9 @@ public class TaskService {
         List<Task> tasks;
 
         if (projectId != null && status != null) {
-            tasks = taskRepository.findByProjectIdAndStatus(projectId, status);
+            tasks = taskRepository.findByProject_IdAndStatus(projectId, status);
         } else if (projectId != null) {
-            tasks = taskRepository.findByProjectIdAndStatusNot(projectId, TaskStatus.DELETED);
+            tasks = taskRepository.findByProject_IdAndStatusNot(projectId, TaskStatus.DELETED);
         } else if (status != null) {
             tasks = taskRepository.findByStatus(status);
         } else {

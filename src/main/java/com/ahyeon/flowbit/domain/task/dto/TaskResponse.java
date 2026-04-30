@@ -10,6 +10,7 @@ public class TaskResponse {
 
     private Long id;
     private Long projectId;
+    private String projectName;
     private String title;
     private String description;
     private String status;
@@ -22,7 +23,8 @@ public class TaskResponse {
 
     public TaskResponse(Task task) {
         this.id = task.getId();
-        this.projectId = task.getProjectId();
+        this.projectId = task.getProject().getId();
+        this.projectName = task.getProject().getName();
         this.title = task.getTitle();
         this.description = task.getDescription();
         this.status = task.getStatus().name();

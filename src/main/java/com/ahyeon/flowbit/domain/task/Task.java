@@ -1,5 +1,7 @@
 package com.ahyeon.flowbit.domain.task;
 
+import com.ahyeon.flowbit.domain.project.Project;
+
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -16,7 +18,9 @@ public class Task {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long projectId; // 어떤 프로젝트에 속한 작업인지 (현재는 ID만 관리)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project_id", nullable = false)
+    private Project project; // 어떤 프로젝트에 속한 작업인지
 
     private String title; // 작업 제목
 
@@ -39,11 +43,11 @@ public class Task {
 
     private LocalDateTime deletedAt; // 삭제 시점 (soft delete용, 실제 DB 삭제 안 함)
 
-    public Task(Long projectId, String title, String description,
+    public Task(Project project, String title, String description,
                 TaskStatus status, Long assigneeId, Integer priority,
                 LocalDateTime createdAt) {
 
-        this.projectId = projectId;
+        this.project = project;
         this.title = title;
         this.description = description;
         this.status = status;
