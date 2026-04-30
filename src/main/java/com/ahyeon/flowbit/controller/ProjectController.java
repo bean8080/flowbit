@@ -3,6 +3,7 @@ package com.ahyeon.flowbit.controller;
 import com.ahyeon.flowbit.domain.project.ProjectService;
 import com.ahyeon.flowbit.domain.project.dto.CreateProjectRequest;
 import com.ahyeon.flowbit.domain.project.dto.ProjectResponse;
+import com.ahyeon.flowbit.domain.project.dto.ProjectTimelineResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,5 +29,10 @@ public class ProjectController {
     @GetMapping("/{id}")
     public ProjectResponse getProject(@PathVariable Long id) {
         return projectService.getProject(id);
+    }
+
+    @GetMapping("/{id}/timeline")
+    public List<ProjectTimelineResponse> getProjectTimeline(@PathVariable Long id) {
+        return projectService.getProjectTimeline(id);
     }
 }
