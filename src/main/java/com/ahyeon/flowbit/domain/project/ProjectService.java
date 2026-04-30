@@ -2,6 +2,8 @@ package com.ahyeon.flowbit.domain.project;
 
 import com.ahyeon.flowbit.domain.project.dto.CreateProjectRequest;
 import com.ahyeon.flowbit.domain.project.dto.ProjectResponse;
+import com.ahyeon.flowbit.domain.project.dto.ProjectTimelineResponse;
+import com.ahyeon.flowbit.domain.task.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +15,8 @@ import java.util.List;
 public class ProjectService {
 
     private final ProjectRepository projectRepository;
+    private final TaskRepository taskRepository;
+    private final TaskEventRepository taskEventRepository;
 
     public void createProject(CreateProjectRequest request) {
 
@@ -54,5 +58,23 @@ public class ProjectService {
                     );
                     return projectRepository.save(defaultProject);
                 });
+    }
+
+    public List<ProjectTimelineResponse> getProjectTimeline(Long projectId) {
+
+        projectRepository.findById(projectId)
+                .orElseThrow(() -> new IllegalArgumentException("프로젝트를 찾을 수 없습니다."));
+
+        List<Task> tasks = taskRepository.findByProjectIdAndStatusNot(projectId, TaskStatus.DELETED);
+
+        List<Long> taskIds = tasks.stream()
+                .map(Task::getId)
+                .toList();
+
+        List<TaskEvent> events = taskEventRepository.findByTaskIdInOrderByCreatedAtAsc(taskIds);
+
+        return events.stream()
+                .map(ProjectTimelineResponse::new)
+                .toList();
     }
 }
