@@ -2,10 +2,11 @@ package com.ahyeon.flowbit.domain.project.dto;
 
 import lombok.Getter;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Getter
-public class ProjectAnalysisResponse {
+public class ProjectAnalysisResponse implements Serializable {
 
     private Long projectId;
     private String projectName;
