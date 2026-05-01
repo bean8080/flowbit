@@ -1,5 +1,5 @@
 ### 프로젝트 생성 - 1번
-POST http://localhost:8080/projects
+POST http://localhost:8080/api/projects
 Content-Type: application/json
 
 {
@@ -8,7 +8,7 @@ Content-Type: application/json
 }
 
 ### 프로젝트 생성 - 2번
-POST http://localhost:8080/projects
+POST http://localhost:8080/api/projects
 Content-Type: application/json
 
 {
@@ -17,7 +17,7 @@ Content-Type: application/json
 }
 
 ### 프로젝트 생성 - 3번
-POST http://localhost:8080/projects
+POST http://localhost:8080/api/projects
 Content-Type: application/json
 
 {
@@ -26,10 +26,10 @@ Content-Type: application/json
 }
 
 ### 프로젝트 목록 조회 - projectId 확인
-GET http://localhost:8080/projects
+GET http://localhost:8080/api/projects
 
 ### Task 생성 - 첫 번째 작업
-POST http://localhost:8080/tasks
+POST http://localhost:8080/api/tasks
 Content-Type: application/json
 
 {
@@ -41,7 +41,7 @@ Content-Type: application/json
 }
 
 ### Task 생성 - 두 번째 작업
-POST http://localhost:8080/tasks
+POST http://localhost:8080/api/tasks
 Content-Type: application/json
 
 {
@@ -53,7 +53,7 @@ Content-Type: application/json
 }
 
 ### Task 생성 - 세 번째 작업
-POST http://localhost:8080/tasks
+POST http://localhost:8080/api/tasks
 Content-Type: application/json
 
 {
@@ -65,7 +65,7 @@ Content-Type: application/json
 }
 
 ### Task 생성 - 네 번째 작업
-POST http://localhost:8080/tasks
+POST http://localhost:8080/api/tasks
 Content-Type: application/json
 
 {
@@ -78,7 +78,7 @@ Content-Type: application/json
 
 
 ### projectId 없이 Task 생성 - DEFAULT 프로젝트 자동 생성 테스트
-POST http://localhost:8080/tasks
+POST http://localhost:8080/api/tasks
 Content-Type: application/json
 
 {
@@ -88,40 +88,40 @@ Content-Type: application/json
 }
 
 ### DEFAULT 프로젝트가 생성되었는지 확인
-GET http://localhost:8080/projects
+GET http://localhost:8080/api/projects
 
 ### Task 전체 조회
-GET http://localhost:8080/tasks
+GET http://localhost:8080/api/tasks
 
 ### 프로젝트별 Task 조회
-GET http://localhost:8080/tasks?projectId=1
+GET http://localhost:8080/api/tasks?projectId=1
 
 ### 프로젝트 + 상태 조건 Task 조회
-GET http://localhost:8080/tasks?projectId=1&status=TODO
+GET http://localhost:8080/api/tasks?projectId=1&status=TODO
 
 ### Task 단건 조회
-GET http://localhost:8080/tasks/1
+GET http://localhost:8080/api/tasks/1
 
 ### Task 시작 - TODO → IN_PROGRESS
-PATCH http://localhost:8080/tasks/1/start
+PATCH http://localhost:8080/api/tasks/1/start
 
 ### Task 이벤트 조회
-GET http://localhost:8080/tasks/1/events
+GET http://localhost:8080/api/tasks/1/events
 
 ### 이벤트 기준 최신 상태 조회
-GET http://localhost:8080/tasks/1/latest-status
+GET http://localhost:8080/api/tasks/1/latest-status
 
 ### Task 타임라인 조회 - 상태 변화 흐름을 시간 순으로 확인
-GET http://localhost:8080/tasks/1/timeline
+GET http://localhost:8080/api/tasks/1/timeline
 
 ### Project 타임라인 조회 - 프로젝트 안의 모든 TaskEvent를 시간순으로 확인
-GET http://localhost:8080/projects/1/timeline
+GET http://localhost:8080/api/projects/1/timeline
 
 ### 프로젝트 분석 조회
-GET http://localhost:8080/projects/1/analysis
+GET http://localhost:8080/api/projects/1/analysis
 
 ### 프로젝트 생성
-POST http://localhost:8080/projects
+POST http://localhost:8080/api/projects
 Content-Type: application/json
 
 {
@@ -130,7 +130,7 @@ Content-Type: application/json
 }
 
 ### Task 생성
-POST http://localhost:8080/tasks
+POST http://localhost:8080/api/tasks
 Content-Type: application/json
 
 {
@@ -142,4 +142,4 @@ Content-Type: application/json
 }
 
 ### 존재하지 않는 프로젝트 조회 - 에러 응답 확인
-GET http://localhost:8080/projects/99999
+GET http://localhost:8080/api/projects/99999
