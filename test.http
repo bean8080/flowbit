@@ -140,3 +140,6 @@ Content-Type: application/json
   "assigneeId": 1,
   "priority": 1
 }
+
+### 존재하지 않는 프로젝트 조회 - 에러 응답 확인
+GET http://localhost:8080/projects/99999
