@@ -6,6 +6,7 @@ import com.ahyeon.flowbit.domain.project.dto.ProjectTimelineResponse;
 import com.ahyeon.flowbit.domain.project.dto.ProjectAnalysisResponse;
 import com.ahyeon.flowbit.domain.task.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -81,6 +82,7 @@ public class ProjectService {
                 .toList();
     }
 
+    @Cacheable(value = "projectAnalysis", key = "#projectId")
     public ProjectAnalysisResponse getProjectAnalysis(Long projectId) {
 
         Project project = projectRepository.findById(projectId)

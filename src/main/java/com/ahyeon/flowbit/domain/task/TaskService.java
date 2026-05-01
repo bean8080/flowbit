@@ -8,6 +8,7 @@ import com.ahyeon.flowbit.domain.task.dto.TaskEventResponse;
 import com.ahyeon.flowbit.domain.task.dto.TaskTimelineResponse;
 import com.ahyeon.flowbit.domain.project.ProjectService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -88,6 +89,7 @@ public class TaskService {
         return new TaskResponse(task);
     }
 
+    @CacheEvict(value = "projectAnalysis", key = "#result.projectId")
     public TaskResponse startTask(Long id) {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("작업을 찾을 수 없습니다."));
@@ -127,6 +129,7 @@ public class TaskService {
                 .toList();
     }
 
+    @CacheEvict(value = "projectAnalysis", key = "#result.projectId")
     public TaskResponse completeTask(Long id) {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("작업을 찾을 수 없습니다."));
@@ -152,6 +155,7 @@ public class TaskService {
         return new TaskResponse(task);
     }
 
+    @CacheEvict(value = "projectAnalysis", key = "#result.projectId")
     public TaskResponse blockTask(Long id) {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("작업을 찾을 수 없습니다."));
@@ -177,6 +181,7 @@ public class TaskService {
         return new TaskResponse(task);
     }
 
+    @CacheEvict(value = "projectAnalysis", key = "#result.projectId")
     public TaskResponse deleteTask(Long id) {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("작업을 찾을 수 없습니다."));
