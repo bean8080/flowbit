@@ -119,3 +119,24 @@ GET http://localhost:8080/projects/1/timeline
 
 ### 프로젝트 분석 조회
 GET http://localhost:8080/projects/1/analysis
+
+### 프로젝트 생성
+POST http://localhost:8080/projects
+Content-Type: application/json
+
+{
+  "name": "Flowbit",
+  "description": "flow test project"
+}
+
+### Task 생성
+POST http://localhost:8080/tasks
+Content-Type: application/json
+
+{
+  "projectId": 5,
+  "title": "Task 1",
+  "description": "first task",
+  "assigneeId": 1,
+  "priority": 1
+}

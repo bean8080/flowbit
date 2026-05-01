@@ -23,7 +23,7 @@ public class TaskService {
     private final ProjectRepository projectRepository;
     private final ProjectService projectService;
 
-    public void createTask(CreateTaskRequest request) {
+    public TaskResponse createTask(CreateTaskRequest request) {
 
         LocalDateTime now = LocalDateTime.now();
 
@@ -59,6 +59,8 @@ public class TaskService {
         );
 
         taskEventRepository.save(event);
+
+        return new TaskResponse(savedTask);
     }
 
     public List<TaskResponse> getTasks(TaskStatus status, Long projectId) {

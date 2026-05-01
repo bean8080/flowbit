@@ -19,7 +19,7 @@ public class ProjectService {
     private final TaskRepository taskRepository;
     private final TaskEventRepository taskEventRepository;
 
-    public void createProject(CreateProjectRequest request) {
+    public ProjectResponse createProject(CreateProjectRequest request) {
 
         Project project = new Project(
                 request.getName(),
@@ -28,7 +28,9 @@ public class ProjectService {
                 LocalDateTime.now()
         );
 
-        projectRepository.save(project);
+        Project savedProject = projectRepository.save(project);
+
+        return new ProjectResponse(savedProject);
     }
 
     public List<ProjectResponse> getProjects() {
