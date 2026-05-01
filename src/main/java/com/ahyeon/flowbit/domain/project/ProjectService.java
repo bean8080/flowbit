@@ -3,6 +3,7 @@ package com.ahyeon.flowbit.domain.project;
 import com.ahyeon.flowbit.domain.project.dto.CreateProjectRequest;
 import com.ahyeon.flowbit.domain.project.dto.ProjectResponse;
 import com.ahyeon.flowbit.domain.project.dto.ProjectTimelineResponse;
+import com.ahyeon.flowbit.domain.project.dto.ProjectAnalysisResponse;
 import com.ahyeon.flowbit.domain.task.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -76,5 +77,50 @@ public class ProjectService {
         return events.stream()
                 .map(ProjectTimelineResponse::new)
                 .toList();
+    }
+
+    public ProjectAnalysisResponse getProjectAnalysis(Long projectId) {
+
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new IllegalArgumentException("프로젝트를 찾을 수 없습니다."));
+
+        List<Task> tasks = taskRepository.findByProject_IdAndStatusNot(projectId, TaskStatus.DELETED);
+
+        List<Long> taskIds = tasks.stream()
+                .map(Task::getId)
+                .toList();
+
+        List<TaskEvent> events = taskIds.isEmpty()
+                ? List.of()
+                : taskEventRepository.findByTaskIdInOrderByCreatedAtAsc(taskIds);
+
+        int totalTaskCount = tasks.size();
+
+        int todoCount = countByStatus(tasks, TaskStatus.TODO);
+        int inProgressCount = countByStatus(tasks, TaskStatus.IN_PROGRESS);
+        int blockedCount = countByStatus(tasks, TaskStatus.BLOCKED);
+        int doneCount = countByStatus(tasks, TaskStatus.DONE);
+
+        LocalDateTime lastEventAt = events.isEmpty()
+                ? null
+                : events.get(events.size() - 1).getCreatedAt();
+
+        return new ProjectAnalysisResponse(
+                project.getId(),
+                project.getName(),
+                totalTaskCount,
+                todoCount,
+                inProgressCount,
+                blockedCount,
+                doneCount,
+                events.size(),
+                lastEventAt
+        );
+    }
+
+    private int countByStatus(List<Task> tasks, TaskStatus status) {
+        return (int) tasks.stream()
+                .filter(task -> task.getStatus() == status)
+                .count();
     }
 }

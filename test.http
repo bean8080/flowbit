@@ -116,3 +116,6 @@ GET http://localhost:8080/tasks/1/timeline
 
 ### Project 타임라인 조회 - 프로젝트 안의 모든 TaskEvent를 시간순으로 확인
 GET http://localhost:8080/projects/1/timeline
+
+### 프로젝트 분석 조회
+GET http://localhost:8080/projects/1/analysis
