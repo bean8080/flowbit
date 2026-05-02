@@ -5,6 +5,7 @@ import com.ahyeon.flowbit.domain.project.dto.CreateProjectRequest;
 import com.ahyeon.flowbit.domain.project.dto.ProjectResponse;
 import com.ahyeon.flowbit.domain.project.dto.ProjectTimelineResponse;
 import com.ahyeon.flowbit.domain.project.dto.ProjectAnalysisResponse;
+import com.ahyeon.flowbit.domain.project.dto.UpdateProjectRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,6 +32,19 @@ public class ProjectController {
     @GetMapping("/{id}")
     public ProjectResponse getProject(@PathVariable Long id) {
         return projectService.getProject(id);
+    }
+
+    @PatchMapping("/{id}")
+    public ProjectResponse updateProject(
+            @PathVariable Long id,
+            @RequestBody UpdateProjectRequest request
+    ) {
+        return projectService.updateProject(id, request);
+    }
+
+    @PatchMapping("/{id}/delete")
+    public ProjectResponse deleteProject(@PathVariable Long id) {
+        return projectService.deleteProject(id);
     }
 
     @GetMapping("/{id}/timeline")

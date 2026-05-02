@@ -37,4 +37,13 @@ public class Project {
         this.status = status;
         this.createdAt = createdAt;
     }
+
+    public void update(String name, String description) {
+        this.name = name;
+        this.description = description;
+    }
+
+    public void delete() {
+        this.status = ProjectStatus.DELETED;
+    }
 }

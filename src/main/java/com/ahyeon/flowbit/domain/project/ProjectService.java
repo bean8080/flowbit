@@ -1,9 +1,6 @@
 package com.ahyeon.flowbit.domain.project;
 
-import com.ahyeon.flowbit.domain.project.dto.CreateProjectRequest;
-import com.ahyeon.flowbit.domain.project.dto.ProjectResponse;
-import com.ahyeon.flowbit.domain.project.dto.ProjectTimelineResponse;
-import com.ahyeon.flowbit.domain.project.dto.ProjectAnalysisResponse;
+import com.ahyeon.flowbit.domain.project.dto.*;
 import com.ahyeon.flowbit.domain.task.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
@@ -126,5 +123,23 @@ public class ProjectService {
         return (int) tasks.stream()
                 .filter(task -> task.getStatus() == status)
                 .count();
+    }
+
+    public ProjectResponse updateProject(Long id, UpdateProjectRequest request) {
+        Project project = projectRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("프로젝트를 찾을 수 없습니다."));
+
+        project.update(request.getName(), request.getDescription());
+
+        return new ProjectResponse(project);
+    }
+
+    public ProjectResponse deleteProject(Long id) {
+        Project project = projectRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("프로젝트를 찾을 수 없습니다."));
+
+        project.delete();
+
+        return new ProjectResponse(project);
     }
 }
