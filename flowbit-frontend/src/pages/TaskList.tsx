@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
-import { getTasks } from "../api/taskApi";
+import {
+    getTasks,
+    startTask,
+    completeTask,
+    blockTask,
+} from "../api/taskApi";
 
 type Task = {
     id: number;
@@ -11,11 +16,27 @@ type Task = {
 export default function TaskList() {
     const [tasks, setTasks] = useState<Task[]>([]);
 
-    useEffect(() => {
+    const fetchTasks = () => {
         getTasks().then((res) => {
             setTasks(res.data);
         });
+    };
+
+    useEffect(() => {
+        fetchTasks();
     }, []);
+
+    const handleStart = (id: number) => {
+        startTask(id).then(fetchTasks);
+    };
+
+    const handleComplete = (id: number) => {
+        completeTask(id).then(fetchTasks);
+    };
+
+    const handleBlock = (id: number) => {
+        blockTask(id).then(fetchTasks);
+    };
 
     return (
         <main style={{ maxWidth: "900px", margin: "0 auto", padding: "48px 24px" }}>
@@ -41,9 +62,15 @@ export default function TaskList() {
                             <span>{task.status}</span>
                         </div>
 
-                        <p style={{ color: "#9ca3af", marginBottom: 0 }}>
+                        <p style={{ color: "#9ca3af" }}>
                             Project: {task.projectName}
                         </p>
+
+                        <div style={{ display: "flex", gap: "8px", marginTop: "12px" }}>
+                            <button onClick={() => handleStart(task.id)}>시작</button>
+                            <button onClick={() => handleComplete(task.id)}>완료</button>
+                            <button onClick={() => handleBlock(task.id)}>막힘</button>
+                        </div>
                     </section>
                 ))}
             </div>
