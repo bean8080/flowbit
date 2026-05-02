@@ -3,6 +3,7 @@ package com.ahyeon.flowbit.domain.project;
 import com.ahyeon.flowbit.domain.project.dto.*;
 import com.ahyeon.flowbit.domain.task.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -28,14 +29,21 @@ public class ProjectService {
 
         Project savedProject = projectRepository.save(project);
 
-        return new ProjectResponse(savedProject);
+        return new ProjectResponse(savedProject, List.of());
     }
 
     public List<ProjectResponse> getProjects() {
 
         return projectRepository.findByStatusNot(ProjectStatus.DELETED)
                 .stream()
-                .map(ProjectResponse::new)
+                .map(project -> {
+                    List<Task> tasks = taskRepository.findByProject_IdAndStatusNot(
+                            project.getId(),
+                            TaskStatus.DELETED
+                    );
+
+                    return new ProjectResponse(project, tasks);
+                })
                 .toList();
     }
 
@@ -44,7 +52,12 @@ public class ProjectService {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("프로젝트를 찾을 수 없습니다."));
 
-        return new ProjectResponse(project);
+        List<Task> tasks = taskRepository.findByProject_IdAndStatusNot(
+                project.getId(),
+                TaskStatus.DELETED
+        );
+
+        return new ProjectResponse(project, tasks);
     }
 
     public Project getOrCreateDefaultProject() {
@@ -66,13 +79,18 @@ public class ProjectService {
         projectRepository.findById(projectId)
                 .orElseThrow(() -> new IllegalArgumentException("프로젝트를 찾을 수 없습니다."));
 
-        List<Task> tasks = taskRepository.findByProject_IdAndStatusNot(projectId, TaskStatus.DELETED);
+        List<Task> tasks = taskRepository.findByProject_IdAndStatusNot(
+                projectId,
+                TaskStatus.DELETED
+        );
 
         List<Long> taskIds = tasks.stream()
                 .map(Task::getId)
                 .toList();
 
-        List<TaskEvent> events = taskEventRepository.findByTaskIdInOrderByCreatedAtAsc(taskIds);
+        List<TaskEvent> events = taskIds.isEmpty()
+                ? List.of()
+                : taskEventRepository.findByTaskIdInOrderByCreatedAtAsc(taskIds);
 
         return events.stream()
                 .map(ProjectTimelineResponse::new)
@@ -85,7 +103,10 @@ public class ProjectService {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new IllegalArgumentException("프로젝트를 찾을 수 없습니다."));
 
-        List<Task> tasks = taskRepository.findByProject_IdAndStatusNot(projectId, TaskStatus.DELETED);
+        List<Task> tasks = taskRepository.findByProject_IdAndStatusNot(
+                projectId,
+                TaskStatus.DELETED
+        );
 
         List<Long> taskIds = tasks.stream()
                 .map(Task::getId)
@@ -119,27 +140,47 @@ public class ProjectService {
         );
     }
 
-    private int countByStatus(List<Task> tasks, TaskStatus status) {
-        return (int) tasks.stream()
-                .filter(task -> task.getStatus() == status)
-                .count();
-    }
-
+    @CacheEvict(value = "projectAnalysis", key = "#id")
     public ProjectResponse updateProject(Long id, UpdateProjectRequest request) {
+
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("프로젝트를 찾을 수 없습니다."));
 
         project.update(request.getName(), request.getDescription());
 
-        return new ProjectResponse(project);
+        List<Task> tasks = taskRepository.findByProject_IdAndStatusNot(
+                project.getId(),
+                TaskStatus.DELETED
+        );
+
+        return new ProjectResponse(project, tasks);
     }
 
+    @CacheEvict(value = "projectAnalysis", key = "#id")
     public ProjectResponse deleteProject(Long id) {
+
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("프로젝트를 찾을 수 없습니다."));
 
+        LocalDateTime now = LocalDateTime.now();
+
+        List<Task> tasks = taskRepository.findByProject_IdAndStatusNot(
+                id,
+                TaskStatus.DELETED
+        );
+
+        for (Task task : tasks) {
+            task.delete(now);
+        }
+
         project.delete();
 
-        return new ProjectResponse(project);
+        return new ProjectResponse(project, List.of());
+    }
+
+    private int countByStatus(List<Task> tasks, TaskStatus status) {
+        return (int) tasks.stream()
+                .filter(task -> task.getStatus() == status)
+                .count();
     }
 }
