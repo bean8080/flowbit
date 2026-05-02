@@ -15,16 +15,17 @@ type Task = {
 
 export default function TaskList() {
     const [tasks, setTasks] = useState<Task[]>([]);
+    const [selectedProjectId, setSelectedProjectId] = useState<number | undefined>();
 
     const fetchTasks = () => {
-        getTasks().then((res) => {
+        getTasks(selectedProjectId).then((res) => {
             setTasks(res.data);
         });
     };
 
     useEffect(() => {
         fetchTasks();
-    }, []);
+    }, [selectedProjectId]);
 
     const handleStart = (id: number) => {
         startTask(id).then(fetchTasks);
@@ -44,6 +45,21 @@ export default function TaskList() {
             <p style={{ color: "#9ca3af", marginBottom: "32px" }}>
                 작업의 상태 변화 흐름을 기록하고 보여주는 시스템
             </p>
+
+            <select
+                style={{ marginBottom: "24px", padding: "8px 12px" }}
+                value={selectedProjectId ?? ""}
+                onChange={(e) =>
+                    setSelectedProjectId(e.target.value ? Number(e.target.value) : undefined)
+                }
+            >
+                <option value="">전체 프로젝트</option>
+                <option value="1">Flowbit MVP</option>
+                <option value="2">Portfolio</option>
+                <option value="3">Study</option>
+                <option value="4">DEFAULT</option>
+                <option value="5">Flowbit</option>
+            </select>
 
             <div style={{ display: "grid", gap: "16px" }}>
                 {tasks.map((task) => (
