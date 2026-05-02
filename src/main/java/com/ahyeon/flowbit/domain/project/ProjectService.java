@@ -34,8 +34,15 @@ public class ProjectService {
 
     public List<ProjectResponse> getProjects() {
 
+        getOrCreateDefaultProject();
+
         return projectRepository.findByStatusNot(ProjectStatus.DELETED)
                 .stream()
+                .sorted((p1, p2) -> {
+                    if (p1.getName().equals("DEFAULT")) return -1;
+                    if (p2.getName().equals("DEFAULT")) return 1;
+                    return p1.getId().compareTo(p2.getId());
+                })
                 .map(project -> {
                     List<Task> tasks = taskRepository.findByProject_IdAndStatusNot(
                             project.getId(),
@@ -146,6 +153,10 @@ public class ProjectService {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("프로젝트를 찾을 수 없습니다."));
 
+        if ("DEFAULT".equals(project.getName())) {
+            throw new IllegalStateException("기본 프로젝트는 수정/삭제할 수 없습니다.");
+        }
+
         project.update(request.getName(), request.getDescription());
 
         List<Task> tasks = taskRepository.findByProject_IdAndStatusNot(
@@ -162,6 +173,10 @@ public class ProjectService {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("프로젝트를 찾을 수 없습니다."));
 
+        if ("DEFAULT".equals(project.getName())) {
+            throw new IllegalStateException("기본 프로젝트는 수정/삭제할 수 없습니다.");
+        }
+
         LocalDateTime now = LocalDateTime.now();
 
         List<Task> tasks = taskRepository.findByProject_IdAndStatusNot(
@@ -173,7 +188,7 @@ public class ProjectService {
             task.delete(now);
         }
 
-        project.delete();
+        project.delete(now);
 
         return new ProjectResponse(project, List.of());
     }

@@ -30,25 +30,18 @@ public class ProjectResponse {
             return "READY";
         }
 
-        boolean hasBlocked = tasks.stream()
-                .anyMatch(task -> task.getStatus() == TaskStatus.BLOCKED);
-
         boolean hasInProgress = tasks.stream()
                 .anyMatch(task -> task.getStatus() == TaskStatus.IN_PROGRESS);
 
         boolean allDone = tasks.stream()
                 .allMatch(task -> task.getStatus() == TaskStatus.DONE);
 
-        if (hasBlocked) {
-            return "BLOCKED";
+        if (allDone) {
+            return "DONE";
         }
 
         if (hasInProgress) {
             return "IN_PROGRESS";
-        }
-
-        if (allDone) {
-            return "DONE";
         }
 
         return "READY";

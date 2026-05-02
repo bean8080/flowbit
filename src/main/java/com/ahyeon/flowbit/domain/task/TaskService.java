@@ -96,10 +96,6 @@ public class TaskService {
 
         TaskStatus fromStatus = task.getStatus();
 
-        if (fromStatus != TaskStatus.TODO) {
-            throw new IllegalStateException("TODO 상태의 작업만 시작할 수 있습니다.");
-        }
-
         LocalDateTime now = LocalDateTime.now();
 
         task.start(now);

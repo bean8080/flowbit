@@ -43,7 +43,8 @@ public class Project {
         this.description = description;
     }
 
-    public void delete() {
+    public void delete(LocalDateTime now) {
         this.status = ProjectStatus.DELETED;
+        this.deletedAt = now;
     }
 }

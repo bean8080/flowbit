@@ -157,9 +157,19 @@ const styles: Record<string, CSSProperties> = {
         cursor: "pointer",
         fontWeight: 900,
     },
+    editBox: {
+        display: "grid",
+        gap: "10px",
+        flex: 1,
+    },
+    editActions: {
+        display: "flex",
+        gap: "8px",
+        flexWrap: "wrap",
+    },
     taskForm: {
         display: "grid",
-        gridTemplateColumns: "1fr auto",
+        gridTemplateColumns: "1fr 1.4fr auto",
         gap: "10px",
         marginBottom: "18px",
     },
@@ -187,6 +197,12 @@ const styles: Record<string, CSSProperties> = {
         color: "#0f172a",
         fontWeight: 900,
         letterSpacing: "-0.02em",
+    },
+    taskDescription: {
+        margin: "10px 0 0",
+        color: "#64748b",
+        fontSize: "14px",
+        lineHeight: 1.5,
     },
     badge: {
         padding: "6px 10px",
@@ -234,6 +250,10 @@ const styles: Record<string, CSSProperties> = {
     },
 };
 
+const getProjectDisplayName = (project: Project) => {
+    return project.name === "DEFAULT" ? "기본 프로젝트" : project.name;
+};
+
 export default function TaskList() {
     const [projects, setProjects] = useState<Project[]>([]);
     const [tasks, setTasks] = useState<Task[]>([]);
@@ -241,6 +261,11 @@ export default function TaskList() {
     const [newProjectName, setNewProjectName] = useState("");
     const [newProjectDescription, setNewProjectDescription] = useState("");
     const [taskTitles, setTaskTitles] = useState<Record<number, string>>({});
+    const [taskDescriptions, setTaskDescriptions] = useState<Record<number, string>>({});
+
+    const [editingProjectId, setEditingProjectId] = useState<number | null>(null);
+    const [editProjectName, setEditProjectName] = useState("");
+    const [editProjectDescription, setEditProjectDescription] = useState("");
 
     const fetchProjects = () => {
         getProjects().then((res) => setProjects(res.data));
@@ -275,24 +300,40 @@ export default function TaskList() {
         });
     };
 
-    const handleUpdateProject = (project: Project) => {
-        const nextName = prompt("프로젝트 이름 수정", project.name);
-        if (!nextName || !nextName.trim()) return;
+    const handleEditProject = (project: Project) => {
+        if (project.name === "DEFAULT") return;
 
-        const nextDescription = prompt(
-            "프로젝트 설명 수정",
-            project.description ?? ""
-        );
-
-        updateProject(project.id, {
-            name: nextName,
-            description: nextDescription ?? "",
-        }).then(refreshWorkspace);
+        setEditingProjectId(project.id);
+        setEditProjectName(project.name);
+        setEditProjectDescription(project.description ?? "");
     };
 
-    const handleDeleteProject = (projectId: number) => {
+    const handleCancelEditProject = () => {
+        setEditingProjectId(null);
+        setEditProjectName("");
+        setEditProjectDescription("");
+    };
+
+    const handleSaveProject = (projectId: number) => {
+        if (!editProjectName.trim()) {
+            alert("프로젝트 이름을 입력해줘");
+            return;
+        }
+
+        updateProject(projectId, {
+            name: editProjectName,
+            description: editProjectDescription,
+        }).then(() => {
+            handleCancelEditProject();
+            refreshWorkspace();
+        });
+    };
+
+    const handleDeleteProject = (project: Project) => {
+        if (project.name === "DEFAULT") return;
+
         if (!confirm("프로젝트를 삭제할까요?")) return;
-        deleteProject(projectId).then(refreshWorkspace);
+        deleteProject(project.id).then(refreshWorkspace);
     };
 
     const handleChangeTaskTitle = (projectId: number, value: string) => {
@@ -302,8 +343,16 @@ export default function TaskList() {
         }));
     };
 
+    const handleChangeTaskDescription = (projectId: number, value: string) => {
+        setTaskDescriptions((prev) => ({
+            ...prev,
+            [projectId]: value,
+        }));
+    };
+
     const handleCreateTask = (projectId: number) => {
         const title = taskTitles[projectId];
+        const description = taskDescriptions[projectId] ?? "";
 
         if (!title || !title.trim()) {
             alert("작업 제목을 입력해줘");
@@ -313,7 +362,7 @@ export default function TaskList() {
         createTask({
             projectId,
             title,
-            description: "",
+            description,
             assigneeId: null,
             priority: 1,
         }).then(() => {
@@ -321,25 +370,29 @@ export default function TaskList() {
                 ...prev,
                 [projectId]: "",
             }));
-            fetchTasks();
+            setTaskDescriptions((prev) => ({
+                ...prev,
+                [projectId]: "",
+            }));
+            refreshWorkspace();
         });
     };
 
     const handleStart = (id: number) => {
-        startTask(id).then(fetchTasks);
+        startTask(id).then(refreshWorkspace);
     };
 
     const handleComplete = (id: number) => {
-        completeTask(id).then(fetchTasks);
+        completeTask(id).then(refreshWorkspace);
     };
 
     const handleBlock = (id: number) => {
-        blockTask(id).then(fetchTasks);
+        blockTask(id).then(refreshWorkspace);
     };
 
     const handleDeleteTask = (id: number) => {
         if (!confirm("작업을 삭제할까요?")) return;
-        deleteTask(id).then(fetchTasks);
+        deleteTask(id).then(refreshWorkspace);
     };
 
     return (
@@ -376,31 +429,71 @@ export default function TaskList() {
                             (task) => task.projectId === project.id
                         );
 
+                        const isEditing = editingProjectId === project.id;
+                        const isDefaultProject = project.name === "DEFAULT";
+                        const projectDisplayName = getProjectDisplayName(project);
+
                         return (
                             <section key={project.id} style={styles.projectSection}>
                                 <div style={styles.projectHeader}>
-                                    <div>
-                                        <h2 style={styles.projectName}>{project.name}</h2>
-                                        <p style={styles.projectDesc}>
-                                            {project.description || "설명 없음"} ·{" "}
-                                            {projectStatusLabelMap[project.status] ?? project.status}
-                                        </p>
-                                    </div>
+                                    {isEditing ? (
+                                        <div style={styles.editBox}>
+                                            <input
+                                                style={styles.input}
+                                                value={editProjectName}
+                                                onChange={(e) => setEditProjectName(e.target.value)}
+                                                placeholder="프로젝트 이름"
+                                            />
+                                            <input
+                                                style={styles.input}
+                                                value={editProjectDescription}
+                                                onChange={(e) =>
+                                                    setEditProjectDescription(e.target.value)
+                                                }
+                                                placeholder="프로젝트 설명"
+                                            />
+                                            <div style={styles.editActions}>
+                                                <button
+                                                    style={styles.primaryButton}
+                                                    onClick={() => handleSaveProject(project.id)}
+                                                >
+                                                    저장
+                                                </button>
+                                                <button
+                                                    style={styles.ghostButton}
+                                                    onClick={handleCancelEditProject}
+                                                >
+                                                    취소
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div>
+                                            <h2 style={styles.projectName}>{projectDisplayName}</h2>
+                                            <p style={styles.projectDesc}>
+                                                {project.description || "설명 없음"} ·{" "}
+                                                {projectStatusLabelMap[project.status] ??
+                                                    project.status}
+                                            </p>
+                                        </div>
+                                    )}
 
-                                    <div style={styles.projectActions}>
-                                        <button
-                                            style={styles.ghostButton}
-                                            onClick={() => handleUpdateProject(project)}
-                                        >
-                                            수정
-                                        </button>
-                                        <button
-                                            style={styles.projectDeleteButton}
-                                            onClick={() => handleDeleteProject(project.id)}
-                                        >
-                                            프로젝트 삭제
-                                        </button>
-                                    </div>
+                                    {!isEditing && !isDefaultProject && (
+                                        <div style={styles.projectActions}>
+                                            <button
+                                                style={styles.ghostButton}
+                                                onClick={() => handleEditProject(project)}
+                                            >
+                                                수정
+                                            </button>
+                                            <button
+                                                style={styles.projectDeleteButton}
+                                                onClick={() => handleDeleteProject(project)}
+                                            >
+                                                프로젝트 삭제
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div style={styles.taskForm}>
@@ -410,7 +503,15 @@ export default function TaskList() {
                                         onChange={(e) =>
                                             handleChangeTaskTitle(project.id, e.target.value)
                                         }
-                                        placeholder={`${project.name}에 새 작업 추가`}
+                                        placeholder={`${projectDisplayName}에 작업 추가`}
+                                    />
+                                    <input
+                                        style={styles.input}
+                                        value={taskDescriptions[project.id] ?? ""}
+                                        onChange={(e) =>
+                                            handleChangeTaskDescription(project.id, e.target.value)
+                                        }
+                                        placeholder="작업 설명"
                                     />
                                     <button
                                         style={styles.primaryButton}
@@ -437,9 +538,15 @@ export default function TaskList() {
                                                             }),
                                                         }}
                                                     >
-                            {statusLabelMap[task.status] ?? task.status}
-                          </span>
+                                                        {statusLabelMap[task.status] ?? task.status}
+                                                    </span>
                                                 </div>
+
+                                                {task.description && (
+                                                    <p style={styles.taskDescription}>
+                                                        {task.description}
+                                                    </p>
+                                                )}
 
                                                 <div style={styles.actionRow}>
                                                     <button

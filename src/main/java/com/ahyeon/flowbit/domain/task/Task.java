@@ -57,13 +57,17 @@ public class Task {
     }
 
     public void start(LocalDateTime startedAt) {
+        if (this.status == TaskStatus.DELETED) {
+            throw new IllegalStateException("삭제된 작업은 변경할 수 없습니다.");
+        }
+
         this.status = TaskStatus.IN_PROGRESS;
         this.startedAt = startedAt;
     }
 
     public void complete(LocalDateTime now) {
-        if (this.status != TaskStatus.IN_PROGRESS) {
-            throw new IllegalStateException("진행 중인 작업만 완료할 수 있습니다.");
+        if (this.status == TaskStatus.DELETED) {
+            throw new IllegalStateException("삭제된 작업은 변경할 수 없습니다.");
         }
 
         this.status = TaskStatus.DONE;
@@ -71,8 +75,8 @@ public class Task {
     }
 
     public void block() {
-        if (this.status == TaskStatus.DONE || this.status == TaskStatus.DELETED) {
-            throw new IllegalStateException("완료되었거나 삭제된 작업은 보류할 수 없습니다.");
+        if (this.status == TaskStatus.DELETED) {
+            throw new IllegalStateException("삭제된 작업은 변경할 수 없습니다.");
         }
 
         this.status = TaskStatus.BLOCKED;
