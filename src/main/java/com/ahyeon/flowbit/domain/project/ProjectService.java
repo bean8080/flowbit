@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -95,12 +97,18 @@ public class ProjectService {
                 .map(Task::getId)
                 .toList();
 
+        Map<Long, String> taskMap = tasks.stream()
+                .collect(Collectors.toMap(Task::getId, Task::getTitle));
+
         List<TaskEvent> events = taskIds.isEmpty()
                 ? List.of()
                 : taskEventRepository.findByTaskIdInOrderByCreatedAtAsc(taskIds);
 
         return events.stream()
-                .map(ProjectTimelineResponse::new)
+                .map(event -> new ProjectTimelineResponse(
+                        event,
+                        taskMap.get(event.getTaskId())
+                ))
                 .toList();
     }
 

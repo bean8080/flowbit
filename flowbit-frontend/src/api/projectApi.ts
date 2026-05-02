@@ -12,6 +12,29 @@ export type Project = {
     createdAt: string;
 };
 
+export type ProjectTimelineEvent = {
+    eventId: number;
+    taskId: number;
+    taskTitle: string;
+    eventType: string;
+    fromStatus: string | null;
+    toStatus: string | null;
+    description: string;
+    createdAt: string;
+};
+
+export type ProjectAnalysis = {
+    projectId: number;
+    projectName: string;
+    totalTaskCount: number;
+    todoCount: number;
+    inProgressCount: number;
+    blockedCount: number;
+    doneCount: number;
+    totalEventCount: number;
+    lastEventAt: string | null;
+};
+
 export const getProjects = () => {
     return api.get<Project[]>("/projects");
 };
@@ -35,4 +58,12 @@ export const updateProject = (
 
 export const deleteProject = (id: number) => {
     return api.patch<Project>(`/projects/${id}/delete`);
+};
+
+export const getProjectTimeline = (id: number) => {
+    return api.get<ProjectTimelineEvent[]>(`/projects/${id}/timeline`);
+};
+
+export const getProjectAnalysis = (id: number) => {
+    return api.get<ProjectAnalysis>(`/projects/${id}/analysis`);
 };

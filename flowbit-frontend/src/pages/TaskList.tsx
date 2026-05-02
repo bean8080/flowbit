@@ -14,7 +14,11 @@ import {
     createProject,
     updateProject,
     deleteProject,
+    getProjectTimeline,
+    getProjectAnalysis,
     type Project,
+    type ProjectTimelineEvent,
+    type ProjectAnalysis,
 } from "../api/projectApi";
 
 const statusLabelMap: Record<string, string> = {
@@ -22,6 +26,14 @@ const statusLabelMap: Record<string, string> = {
     IN_PROGRESS: "진행중",
     DONE: "완료",
     BLOCKED: "보류",
+};
+
+const eventTypeLabelMap: Record<string, string> = {
+    CREATED: "생성",
+    STARTED: "시작",
+    COMPLETED: "완료",
+    BLOCKED: "보류",
+    DELETED: "삭제",
 };
 
 const projectStatusLabelMap: Record<string, string> = {
@@ -232,6 +244,63 @@ const styles: Record<string, CSSProperties> = {
         padding: "14px 0",
         fontWeight: 700,
     },
+    insightBox: {
+        marginBottom: "18px",
+        padding: "18px",
+        borderRadius: "22px",
+        border: "1px solid #e2e8f0",
+        background: "#f8fafc",
+    },
+    insightTitle: {
+        margin: "0 0 12px",
+        fontSize: "16px",
+        fontWeight: 900,
+        color: "#0f172a",
+    },
+    summaryGrid: {
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
+        gap: "10px",
+    },
+    summaryItem: {
+        padding: "12px",
+        borderRadius: "16px",
+        background: "#ffffff",
+        border: "1px solid #e2e8f0",
+    },
+    summaryLabel: {
+        margin: 0,
+        color: "#64748b",
+        fontSize: "13px",
+        fontWeight: 700,
+    },
+    summaryValue: {
+        margin: "6px 0 0",
+        color: "#0f172a",
+        fontSize: "22px",
+        fontWeight: 900,
+    },
+    timelineList: {
+        display: "grid",
+        gap: "10px",
+    },
+    timelineItem: {
+        padding: "12px 14px",
+        borderRadius: "16px",
+        background: "#ffffff",
+        border: "1px solid #e2e8f0",
+    },
+    timelineMain: {
+        margin: 0,
+        color: "#0f172a",
+        fontWeight: 800,
+        fontSize: "14px",
+    },
+    timelineSub: {
+        margin: "6px 0 0",
+        color: "#64748b",
+        fontSize: "13px",
+    },
 };
 
 const getProjectDisplayName = (project: Project) => {
@@ -254,6 +323,25 @@ const getErrorMessage = (error: unknown) => {
     return "요청 처리 중 오류가 발생했습니다.";
 };
 
+const formatDateTime = (value: string | null) => {
+    if (!value) return "-";
+
+    return new Date(value).toLocaleString("ko-KR", {
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+    });
+};
+
+const formatStatusFlow = (fromStatus: string | null, toStatus: string | null) => {
+    if (!fromStatus && !toStatus) return "";
+    if (!fromStatus) return `${statusLabelMap[toStatus ?? ""] ?? toStatus}`;
+    return `${statusLabelMap[fromStatus] ?? fromStatus} → ${
+        statusLabelMap[toStatus ?? ""] ?? toStatus
+    }`;
+};
+
 export default function TaskList() {
     const [projects, setProjects] = useState<Project[]>([]);
     const [tasks, setTasks] = useState<Task[]>([]);
@@ -271,6 +359,11 @@ export default function TaskList() {
     const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
     const [editTaskTitle, setEditTaskTitle] = useState("");
     const [editTaskDescription, setEditTaskDescription] = useState("");
+
+    const [openSummaryProjectId, setOpenSummaryProjectId] = useState<number | null>(null);
+    const [openTimelineProjectId, setOpenTimelineProjectId] = useState<number | null>(null);
+    const [analysisMap, setAnalysisMap] = useState<Record<number, ProjectAnalysis>>({});
+    const [timelineMap, setTimelineMap] = useState<Record<number, ProjectTimelineEvent[]>>({});
 
     const refreshWorkspace = async () => {
         const [projectResponse, taskResponse] = await Promise.all([
@@ -355,6 +448,46 @@ export default function TaskList() {
         if (!confirm("프로젝트를 삭제할까요?")) return;
 
         runRequest(() => deleteProject(project.id));
+    };
+
+    const handleToggleSummary = (projectId: number) => {
+        if (loading) return;
+
+        if (openSummaryProjectId === projectId) {
+            setOpenSummaryProjectId(null);
+            return;
+        }
+
+        runRequest(async () => {
+            const response = await getProjectAnalysis(projectId);
+
+            setAnalysisMap((prev) => ({
+                ...prev,
+                [projectId]: response.data,
+            }));
+
+            setOpenSummaryProjectId(projectId);
+        });
+    };
+
+    const handleToggleTimeline = (projectId: number) => {
+        if (loading) return;
+
+        if (openTimelineProjectId === projectId) {
+            setOpenTimelineProjectId(null);
+            return;
+        }
+
+        runRequest(async () => {
+            const response = await getProjectTimeline(projectId);
+
+            setTimelineMap((prev) => ({
+                ...prev,
+                [projectId]: response.data,
+            }));
+
+            setOpenTimelineProjectId(projectId);
+        });
     };
 
     const handleChangeTaskTitle = (projectId: number, value: string) => {
@@ -476,6 +609,8 @@ export default function TaskList() {
                         const isEditing = editingProjectId === project.id;
                         const isDefaultProject = project.name === "DEFAULT";
                         const projectDisplayName = getProjectDisplayName(project);
+                        const analysis = analysisMap[project.id];
+                        const timeline = timelineMap[project.id] ?? [];
 
                         return (
                             <section key={project.id} style={styles.projectSection}>
@@ -526,25 +661,150 @@ export default function TaskList() {
                                         </div>
                                     )}
 
-                                    {!isEditing && !isDefaultProject && (
+                                    {!isEditing && (
                                         <div style={styles.projectActions}>
                                             <button
                                                 style={styles.ghostButton}
-                                                onClick={() => handleEditProject(project)}
+                                                onClick={() => handleToggleSummary(project.id)}
                                                 disabled={loading}
                                             >
-                                                수정
+                                                {openSummaryProjectId === project.id
+                                                    ? "요약 닫기"
+                                                    : "요약"}
                                             </button>
                                             <button
-                                                style={styles.projectDeleteButton}
-                                                onClick={() => handleDeleteProject(project)}
+                                                style={styles.ghostButton}
+                                                onClick={() => handleToggleTimeline(project.id)}
                                                 disabled={loading}
                                             >
-                                                프로젝트 삭제
+                                                {openTimelineProjectId === project.id
+                                                    ? "타임라인 닫기"
+                                                    : "타임라인"}
                                             </button>
+
+                                            {!isDefaultProject && (
+                                                <>
+                                                    <button
+                                                        style={styles.ghostButton}
+                                                        onClick={() => handleEditProject(project)}
+                                                        disabled={loading}
+                                                    >
+                                                        수정
+                                                    </button>
+                                                    <button
+                                                        style={styles.projectDeleteButton}
+                                                        onClick={() => handleDeleteProject(project)}
+                                                        disabled={loading}
+                                                    >
+                                                        프로젝트 삭제
+                                                    </button>
+                                                </>
+                                            )}
                                         </div>
                                     )}
                                 </div>
+
+                                {openSummaryProjectId === project.id && analysis && (
+                                    <div style={styles.insightBox}>
+                                        <h3 style={styles.insightTitle}>프로젝트 요약</h3>
+                                        <div style={styles.summaryGrid}>
+                                            <div style={styles.summaryItem}>
+                                                <p style={styles.summaryLabel}>전체 작업</p>
+                                                <p style={styles.summaryValue}>
+                                                    {analysis.totalTaskCount}
+                                                </p>
+                                            </div>
+                                            <div style={styles.summaryItem}>
+                                                <p style={styles.summaryLabel}>대기</p>
+                                                <p style={styles.summaryValue}>
+                                                    {analysis.todoCount}
+                                                </p>
+                                            </div>
+                                            <div style={styles.summaryItem}>
+                                                <p style={styles.summaryLabel}>진행중</p>
+                                                <p style={styles.summaryValue}>
+                                                    {analysis.inProgressCount}
+                                                </p>
+                                            </div>
+                                            <div style={styles.summaryItem}>
+                                                <p style={styles.summaryLabel}>보류</p>
+                                                <p style={styles.summaryValue}>
+                                                    {analysis.blockedCount}
+                                                </p>
+                                            </div>
+                                            <div style={styles.summaryItem}>
+                                                <p style={styles.summaryLabel}>완료</p>
+                                                <p style={styles.summaryValue}>
+                                                    {analysis.doneCount}
+                                                </p>
+                                            </div>
+                                            <div style={styles.summaryItem}>
+                                                <p style={styles.summaryLabel}>이벤트</p>
+                                                <p style={styles.summaryValue}>
+                                                    {analysis.totalEventCount}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <p style={styles.timelineSub}>
+                                            마지막 이벤트: {formatDateTime(analysis.lastEventAt)}
+                                        </p>
+                                    </div>
+                                )}
+
+                                {openTimelineProjectId === project.id && (
+                                    <div style={styles.insightBox}>
+                                        <h3 style={styles.insightTitle}>프로젝트 타임라인</h3>
+
+                                        {timeline.length === 0 ? (
+                                            <p style={styles.empty}>아직 기록된 이벤트가 없습니다.</p>
+                                        ) : (
+                                            <div style={styles.timelineList}>
+                                                {openTimelineProjectId === project.id && (
+                                                    <div style={styles.insightBox}>
+                                                        <h3 style={styles.insightTitle}>프로젝트 타임라인</h3>
+
+                                                        {timeline.length === 0 ? (
+                                                            <p style={styles.empty}>아직 기록된 이벤트가 없습니다.</p>
+                                                        ) : (
+                                                            <div style={styles.timelineList}>
+                                                                {Object.values(
+                                                                    timeline.reduce((acc, event) => {
+                                                                        if (!acc[event.taskId]) {
+                                                                            acc[event.taskId] = {
+                                                                                taskTitle: event.taskTitle,
+                                                                                events: [],
+                                                                            };
+                                                                        }
+
+                                                                        acc[event.taskId].events.push(event);
+                                                                        return acc;
+                                                                    }, {} as Record<number, { taskTitle: string; events: ProjectTimelineEvent[] }>)
+                                                                ).map((group, groupIndex) => (
+                                                                    <div key={`${group.taskTitle}-${groupIndex}`} style={styles.timelineItem}>
+                                                                        <p style={styles.timelineMain}>{group.taskTitle}</p>
+
+                                                                        {group.events.map((event, eventIndex) => (
+                                                                            <p
+                                                                                key={`${event.eventId}-${eventIndex}`}
+                                                                                style={styles.timelineSub}
+                                                                            >
+                                                                                {formatDateTime(event.createdAt)} ·{" "}
+                                                                                {eventTypeLabelMap[event.eventType] ?? event.eventType}
+                                                                                {" · "}
+                                                                                {formatStatusFlow(event.fromStatus, event.toStatus)}
+                                                                                {event.description ? ` · ${event.description}` : ""}
+                                                                            </p>
+                                                                        ))}
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
 
                                 <div style={styles.taskForm}>
                                     <input
