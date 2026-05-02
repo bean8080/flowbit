@@ -5,6 +5,7 @@ import {
     completeTask,
     blockTask,
 } from "../api/taskApi";
+import { getProjects, type Project } from "../api/projectApi";
 
 type Task = {
     id: number;
@@ -15,6 +16,7 @@ type Task = {
 
 export default function TaskList() {
     const [tasks, setTasks] = useState<Task[]>([]);
+    const [projects, setProjects] = useState<Project[]>([]);
     const [selectedProjectId, setSelectedProjectId] = useState<number | undefined>();
 
     const fetchTasks = () => {
@@ -22,6 +24,12 @@ export default function TaskList() {
             setTasks(res.data);
         });
     };
+
+    useEffect(() => {
+        getProjects().then((res) => {
+            setProjects(res.data);
+        });
+    }, []);
 
     useEffect(() => {
         fetchTasks();
@@ -54,11 +62,12 @@ export default function TaskList() {
                 }
             >
                 <option value="">전체 프로젝트</option>
-                <option value="1">Flowbit MVP</option>
-                <option value="2">Portfolio</option>
-                <option value="3">Study</option>
-                <option value="4">DEFAULT</option>
-                <option value="5">Flowbit</option>
+
+                {projects.map((project) => (
+                    <option key={project.id} value={project.id}>
+                        {project.name}
+                    </option>
+                ))}
             </select>
 
             <div style={{ display: "grid", gap: "16px" }}>
@@ -78,9 +87,7 @@ export default function TaskList() {
                             <span>{task.status}</span>
                         </div>
 
-                        <p style={{ color: "#9ca3af" }}>
-                            Project: {task.projectName}
-                        </p>
+                        <p style={{ color: "#9ca3af" }}>Project: {task.projectName}</p>
 
                         <div style={{ display: "flex", gap: "8px", marginTop: "12px" }}>
                             <button onClick={() => handleStart(task.id)}>시작</button>
