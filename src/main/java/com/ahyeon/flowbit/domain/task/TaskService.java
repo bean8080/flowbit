@@ -2,10 +2,7 @@ package com.ahyeon.flowbit.domain.task;
 
 import com.ahyeon.flowbit.domain.project.Project;
 import com.ahyeon.flowbit.domain.project.ProjectRepository;
-import com.ahyeon.flowbit.domain.task.dto.CreateTaskRequest;
-import com.ahyeon.flowbit.domain.task.dto.TaskResponse;
-import com.ahyeon.flowbit.domain.task.dto.TaskEventResponse;
-import com.ahyeon.flowbit.domain.task.dto.TaskTimelineResponse;
+import com.ahyeon.flowbit.domain.task.dto.*;
 import com.ahyeon.flowbit.domain.project.ProjectService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
@@ -62,6 +59,16 @@ public class TaskService {
         taskEventRepository.save(event);
 
         return new TaskResponse(savedTask);
+    }
+
+    @CacheEvict(value = "projectAnalysis", key = "#result.projectId")
+    public TaskResponse updateTask(Long id, UpdateTaskRequest request) {
+        Task task = taskRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("작업을 찾을 수 없습니다."));
+
+        task.update(request.getTitle(), request.getDescription());
+
+        return new TaskResponse(task);
     }
 
     public List<TaskResponse> getTasks(TaskStatus status, Long projectId) {

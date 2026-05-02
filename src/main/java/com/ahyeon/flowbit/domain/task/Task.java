@@ -82,6 +82,15 @@ public class Task {
         this.status = TaskStatus.BLOCKED;
     }
 
+    public void update(String title, String description) {
+        if (this.status == TaskStatus.DELETED) {
+            throw new IllegalStateException("삭제된 작업은 수정할 수 없습니다.");
+        }
+
+        this.title = title;
+        this.description = description;
+    }
+
     public void delete(LocalDateTime now) {
         this.status = TaskStatus.DELETED;
         this.deletedAt = now;

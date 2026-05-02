@@ -41,6 +41,15 @@ export const completeTask = (id: number) =>
 
 export const blockTask = (id: number) => api.patch<Task>(`/tasks/${id}/block`);
 
+export interface UpdateTaskRequest {
+    title: string;
+    description: string;
+}
+
+export const updateTask = (id: number, data: UpdateTaskRequest) => {
+    return api.patch<Task>(`/tasks/${id}`, data);
+};
+
 export const deleteTask = (id: number) =>
     api.patch<Task>(`/tasks/${id}/delete`);
 

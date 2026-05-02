@@ -2,6 +2,7 @@ import { useEffect, useState, type CSSProperties } from "react";
 import {
     getTasks,
     createTask,
+    updateTask,
     startTask,
     completeTask,
     blockTask,
@@ -45,13 +46,8 @@ const styles: Record<string, CSSProperties> = {
         color: "#0f172a",
         padding: "52px 24px",
     },
-    container: {
-        maxWidth: "1120px",
-        margin: "0 auto",
-    },
-    hero: {
-        marginBottom: "28px",
-    },
+    container: { maxWidth: "1120px", margin: "0 auto" },
+    hero: { marginBottom: "28px" },
     title: {
         fontSize: "64px",
         lineHeight: 1,
@@ -66,6 +62,12 @@ const styles: Record<string, CSSProperties> = {
         marginBottom: "28px",
         fontSize: "19px",
         fontWeight: 500,
+    },
+    loadingText: {
+        marginTop: "10px",
+        color: "#2563eb",
+        fontWeight: 800,
+        fontSize: "14px",
     },
     toolbar: {
         display: "grid",
@@ -113,10 +115,7 @@ const styles: Record<string, CSSProperties> = {
         cursor: "pointer",
         fontWeight: 800,
     },
-    projectGrid: {
-        display: "grid",
-        gap: "28px",
-    },
+    projectGrid: { display: "grid", gap: "28px" },
     projectSection: {
         padding: "26px",
         border: "1px solid #d7e0ee",
@@ -138,16 +137,8 @@ const styles: Record<string, CSSProperties> = {
         fontWeight: 900,
         letterSpacing: "-0.04em",
     },
-    projectDesc: {
-        color: "#475569",
-        margin: "8px 0 0",
-        fontSize: "15px",
-    },
-    projectActions: {
-        display: "flex",
-        gap: "8px",
-        flexWrap: "wrap",
-    },
+    projectDesc: { color: "#475569", margin: "8px 0 0", fontSize: "15px" },
+    projectActions: { display: "flex", gap: "8px", flexWrap: "wrap" },
     projectDeleteButton: {
         padding: "9px 12px",
         borderRadius: "13px",
@@ -157,16 +148,8 @@ const styles: Record<string, CSSProperties> = {
         cursor: "pointer",
         fontWeight: 900,
     },
-    editBox: {
-        display: "grid",
-        gap: "10px",
-        flex: 1,
-    },
-    editActions: {
-        display: "flex",
-        gap: "8px",
-        flexWrap: "wrap",
-    },
+    editBox: { display: "grid", gap: "10px", flex: 1 },
+    editActions: { display: "flex", gap: "8px", flexWrap: "wrap" },
     taskForm: {
         display: "grid",
         gridTemplateColumns: "1fr 1.4fr auto",
@@ -247,6 +230,7 @@ const styles: Record<string, CSSProperties> = {
     empty: {
         color: "#94a3b8",
         padding: "14px 0",
+        fontWeight: 700,
     },
 };
 
@@ -254,9 +238,26 @@ const getProjectDisplayName = (project: Project) => {
     return project.name === "DEFAULT" ? "기본 프로젝트" : project.name;
 };
 
+const getErrorMessage = (error: unknown) => {
+    if (typeof error === "object" && error !== null && "response" in error) {
+        const axiosError = error as {
+            response?: {
+                data?: {
+                    message?: string;
+                };
+            };
+        };
+
+        return axiosError.response?.data?.message ?? "요청 처리 중 오류가 발생했습니다.";
+    }
+
+    return "요청 처리 중 오류가 발생했습니다.";
+};
+
 export default function TaskList() {
     const [projects, setProjects] = useState<Project[]>([]);
     const [tasks, setTasks] = useState<Task[]>([]);
+    const [loading, setLoading] = useState(false);
 
     const [newProjectName, setNewProjectName] = useState("");
     const [newProjectDescription, setNewProjectDescription] = useState("");
@@ -267,21 +268,37 @@ export default function TaskList() {
     const [editProjectName, setEditProjectName] = useState("");
     const [editProjectDescription, setEditProjectDescription] = useState("");
 
-    const fetchProjects = () => {
-        getProjects().then((res) => setProjects(res.data));
+    const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
+    const [editTaskTitle, setEditTaskTitle] = useState("");
+    const [editTaskDescription, setEditTaskDescription] = useState("");
+
+    const refreshWorkspace = async () => {
+        const [projectResponse, taskResponse] = await Promise.all([
+            getProjects(),
+            getTasks(),
+        ]);
+
+        setProjects(projectResponse.data);
+        setTasks(taskResponse.data);
     };
 
-    const fetchTasks = () => {
-        getTasks().then((res) => setTasks(res.data));
-    };
+    const runRequest = async (request: () => Promise<unknown>) => {
+        if (loading) return;
 
-    const refreshWorkspace = () => {
-        fetchProjects();
-        fetchTasks();
+        try {
+            setLoading(true);
+            await request();
+            await refreshWorkspace();
+        } catch (error) {
+            alert(getErrorMessage(error));
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => {
-        refreshWorkspace();
+        runRequest(refreshWorkspace);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const handleCreateProject = () => {
@@ -290,18 +307,19 @@ export default function TaskList() {
             return;
         }
 
-        createProject({
-            name: newProjectName,
-            description: newProjectDescription,
-        }).then(() => {
+        runRequest(async () => {
+            await createProject({
+                name: newProjectName,
+                description: newProjectDescription,
+            });
+
             setNewProjectName("");
             setNewProjectDescription("");
-            refreshWorkspace();
         });
     };
 
     const handleEditProject = (project: Project) => {
-        if (project.name === "DEFAULT") return;
+        if (project.name === "DEFAULT" || loading) return;
 
         setEditingProjectId(project.id);
         setEditProjectName(project.name);
@@ -309,6 +327,8 @@ export default function TaskList() {
     };
 
     const handleCancelEditProject = () => {
+        if (loading) return;
+
         setEditingProjectId(null);
         setEditProjectName("");
         setEditProjectDescription("");
@@ -320,34 +340,29 @@ export default function TaskList() {
             return;
         }
 
-        updateProject(projectId, {
-            name: editProjectName,
-            description: editProjectDescription,
-        }).then(() => {
+        runRequest(async () => {
+            await updateProject(projectId, {
+                name: editProjectName,
+                description: editProjectDescription,
+            });
+
             handleCancelEditProject();
-            refreshWorkspace();
         });
     };
 
     const handleDeleteProject = (project: Project) => {
-        if (project.name === "DEFAULT") return;
-
+        if (project.name === "DEFAULT" || loading) return;
         if (!confirm("프로젝트를 삭제할까요?")) return;
-        deleteProject(project.id).then(refreshWorkspace);
+
+        runRequest(() => deleteProject(project.id));
     };
 
     const handleChangeTaskTitle = (projectId: number, value: string) => {
-        setTaskTitles((prev) => ({
-            ...prev,
-            [projectId]: value,
-        }));
+        setTaskTitles((prev) => ({ ...prev, [projectId]: value }));
     };
 
     const handleChangeTaskDescription = (projectId: number, value: string) => {
-        setTaskDescriptions((prev) => ({
-            ...prev,
-            [projectId]: value,
-        }));
+        setTaskDescriptions((prev) => ({ ...prev, [projectId]: value }));
     };
 
     const handleCreateTask = (projectId: number) => {
@@ -359,40 +374,61 @@ export default function TaskList() {
             return;
         }
 
-        createTask({
-            projectId,
-            title,
-            description,
-            assigneeId: null,
-            priority: 1,
-        }).then(() => {
-            setTaskTitles((prev) => ({
-                ...prev,
-                [projectId]: "",
-            }));
-            setTaskDescriptions((prev) => ({
-                ...prev,
-                [projectId]: "",
-            }));
-            refreshWorkspace();
+        runRequest(async () => {
+            await createTask({
+                projectId,
+                title,
+                description,
+                assigneeId: null,
+                priority: 1,
+            });
+
+            setTaskTitles((prev) => ({ ...prev, [projectId]: "" }));
+            setTaskDescriptions((prev) => ({ ...prev, [projectId]: "" }));
         });
     };
 
-    const handleStart = (id: number) => {
-        startTask(id).then(refreshWorkspace);
+    const handleEditTask = (task: Task) => {
+        if (loading) return;
+
+        setEditingTaskId(task.id);
+        setEditTaskTitle(task.title);
+        setEditTaskDescription(task.description ?? "");
     };
 
-    const handleComplete = (id: number) => {
-        completeTask(id).then(refreshWorkspace);
+    const handleCancelEditTask = () => {
+        if (loading) return;
+
+        setEditingTaskId(null);
+        setEditTaskTitle("");
+        setEditTaskDescription("");
     };
 
-    const handleBlock = (id: number) => {
-        blockTask(id).then(refreshWorkspace);
+    const handleSaveTask = (taskId: number) => {
+        if (!editTaskTitle.trim()) {
+            alert("작업 제목을 입력해줘");
+            return;
+        }
+
+        runRequest(async () => {
+            await updateTask(taskId, {
+                title: editTaskTitle,
+                description: editTaskDescription,
+            });
+
+            handleCancelEditTask();
+        });
     };
+
+    const handleStart = (id: number) => runRequest(() => startTask(id));
+    const handleComplete = (id: number) => runRequest(() => completeTask(id));
+    const handleBlock = (id: number) => runRequest(() => blockTask(id));
 
     const handleDeleteTask = (id: number) => {
+        if (loading) return;
         if (!confirm("작업을 삭제할까요?")) return;
-        deleteTask(id).then(refreshWorkspace);
+
+        runRequest(() => deleteTask(id));
     };
 
     return (
@@ -404,21 +440,29 @@ export default function TaskList() {
                         작업의 상태 변화 흐름을 기록하고 보여주는 프로젝트 작업공간
                     </p>
 
+                    {loading && <p style={styles.loadingText}>처리 중입니다...</p>}
+
                     <div style={styles.toolbar}>
                         <input
                             style={styles.input}
                             value={newProjectName}
                             onChange={(e) => setNewProjectName(e.target.value)}
                             placeholder="새 프로젝트 이름"
+                            disabled={loading}
                         />
                         <input
                             style={styles.input}
                             value={newProjectDescription}
                             onChange={(e) => setNewProjectDescription(e.target.value)}
                             placeholder="프로젝트 설명"
+                            disabled={loading}
                         />
-                        <button style={styles.primaryButton} onClick={handleCreateProject}>
-                            + 프로젝트 생성
+                        <button
+                            style={styles.primaryButton}
+                            onClick={handleCreateProject}
+                            disabled={loading}
+                        >
+                            {loading ? "처리 중..." : "+ 프로젝트 생성"}
                         </button>
                     </div>
                 </header>
@@ -443,6 +487,7 @@ export default function TaskList() {
                                                 value={editProjectName}
                                                 onChange={(e) => setEditProjectName(e.target.value)}
                                                 placeholder="프로젝트 이름"
+                                                disabled={loading}
                                             />
                                             <input
                                                 style={styles.input}
@@ -451,17 +496,20 @@ export default function TaskList() {
                                                     setEditProjectDescription(e.target.value)
                                                 }
                                                 placeholder="프로젝트 설명"
+                                                disabled={loading}
                                             />
                                             <div style={styles.editActions}>
                                                 <button
                                                     style={styles.primaryButton}
                                                     onClick={() => handleSaveProject(project.id)}
+                                                    disabled={loading}
                                                 >
-                                                    저장
+                                                    {loading ? "저장 중..." : "저장"}
                                                 </button>
                                                 <button
                                                     style={styles.ghostButton}
                                                     onClick={handleCancelEditProject}
+                                                    disabled={loading}
                                                 >
                                                     취소
                                                 </button>
@@ -483,12 +531,14 @@ export default function TaskList() {
                                             <button
                                                 style={styles.ghostButton}
                                                 onClick={() => handleEditProject(project)}
+                                                disabled={loading}
                                             >
                                                 수정
                                             </button>
                                             <button
                                                 style={styles.projectDeleteButton}
                                                 onClick={() => handleDeleteProject(project)}
+                                                disabled={loading}
                                             >
                                                 프로젝트 삭제
                                             </button>
@@ -504,6 +554,7 @@ export default function TaskList() {
                                             handleChangeTaskTitle(project.id, e.target.value)
                                         }
                                         placeholder={`${projectDisplayName}에 작업 추가`}
+                                        disabled={loading}
                                     />
                                     <input
                                         style={styles.input}
@@ -512,70 +563,148 @@ export default function TaskList() {
                                             handleChangeTaskDescription(project.id, e.target.value)
                                         }
                                         placeholder="작업 설명"
+                                        disabled={loading}
                                     />
                                     <button
                                         style={styles.primaryButton}
                                         onClick={() => handleCreateTask(project.id)}
+                                        disabled={loading}
                                     >
-                                        + 작업 추가
+                                        {loading ? "추가 중..." : "+ 작업 추가"}
                                     </button>
                                 </div>
 
                                 {projectTasks.length === 0 ? (
-                                    <p style={styles.empty}>아직 등록된 작업이 없습니다.</p>
+                                    <p style={styles.empty}>첫 작업을 추가해보세요 🚀</p>
                                 ) : (
                                     <div style={styles.taskList}>
-                                        {projectTasks.map((task) => (
-                                            <article key={task.id} style={styles.taskCard}>
-                                                <div style={styles.taskTop}>
-                                                    <h3 style={styles.taskTitle}>{task.title}</h3>
-                                                    <span
-                                                        style={{
-                                                            ...styles.badge,
-                                                            ...(statusStyleMap[task.status] ?? {
-                                                                background: "#f1f5f9",
-                                                                color: "#334155",
-                                                            }),
-                                                        }}
-                                                    >
-                                                        {statusLabelMap[task.status] ?? task.status}
-                                                    </span>
-                                                </div>
+                                        {projectTasks.map((task) => {
+                                            const isEditingTask = editingTaskId === task.id;
 
-                                                {task.description && (
-                                                    <p style={styles.taskDescription}>
-                                                        {task.description}
-                                                    </p>
-                                                )}
+                                            return (
+                                                <article key={task.id} style={styles.taskCard}>
+                                                    {isEditingTask ? (
+                                                        <>
+                                                            <input
+                                                                style={styles.input}
+                                                                value={editTaskTitle}
+                                                                onChange={(e) =>
+                                                                    setEditTaskTitle(e.target.value)
+                                                                }
+                                                                placeholder="작업 제목"
+                                                                disabled={loading}
+                                                            />
+                                                            <input
+                                                                style={{
+                                                                    ...styles.input,
+                                                                    marginTop: "10px",
+                                                                }}
+                                                                value={editTaskDescription}
+                                                                onChange={(e) =>
+                                                                    setEditTaskDescription(
+                                                                        e.target.value
+                                                                    )
+                                                                }
+                                                                placeholder="작업 설명"
+                                                                disabled={loading}
+                                                            />
+                                                            <div style={styles.actionRow}>
+                                                                <button
+                                                                    style={styles.primaryButton}
+                                                                    onClick={() =>
+                                                                        handleSaveTask(task.id)
+                                                                    }
+                                                                    disabled={loading}
+                                                                >
+                                                                    {loading ? "저장 중..." : "저장"}
+                                                                </button>
+                                                                <button
+                                                                    style={styles.ghostButton}
+                                                                    onClick={handleCancelEditTask}
+                                                                    disabled={loading}
+                                                                >
+                                                                    취소
+                                                                </button>
+                                                            </div>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <div style={styles.taskTop}>
+                                                                <h3 style={styles.taskTitle}>
+                                                                    {task.title}
+                                                                </h3>
+                                                                <span
+                                                                    style={{
+                                                                        ...styles.badge,
+                                                                        ...(statusStyleMap[
+                                                                            task.status
+                                                                            ] ?? {
+                                                                            background: "#f1f5f9",
+                                                                            color: "#334155",
+                                                                        }),
+                                                                    }}
+                                                                >
+                                                                    {statusLabelMap[task.status] ??
+                                                                        task.status}
+                                                                </span>
+                                                            </div>
 
-                                                <div style={styles.actionRow}>
-                                                    <button
-                                                        style={styles.startButton}
-                                                        onClick={() => handleStart(task.id)}
-                                                    >
-                                                        시작
-                                                    </button>
-                                                    <button
-                                                        style={styles.doneButton}
-                                                        onClick={() => handleComplete(task.id)}
-                                                    >
-                                                        완료
-                                                    </button>
-                                                    <button
-                                                        style={styles.holdButton}
-                                                        onClick={() => handleBlock(task.id)}
-                                                    >
-                                                        보류
-                                                    </button>
-                                                    <button
-                                                        style={styles.dangerButton}
-                                                        onClick={() => handleDeleteTask(task.id)}
-                                                    >
-                                                        삭제
-                                                    </button>
-                                                </div>
-                                            </article>
-                                        ))}
+                                                            <p style={styles.taskDescription}>
+                                                                {task.description || "설명 없음"}
+                                                            </p>
+
+                                                            <div style={styles.actionRow}>
+                                                                <button
+                                                                    style={styles.startButton}
+                                                                    onClick={() =>
+                                                                        handleStart(task.id)
+                                                                    }
+                                                                    disabled={loading}
+                                                                >
+                                                                    시작
+                                                                </button>
+                                                                <button
+                                                                    style={styles.doneButton}
+                                                                    onClick={() =>
+                                                                        handleComplete(task.id)
+                                                                    }
+                                                                    disabled={loading}
+                                                                >
+                                                                    완료
+                                                                </button>
+                                                                <button
+                                                                    style={styles.holdButton}
+                                                                    onClick={() =>
+                                                                        handleBlock(task.id)
+                                                                    }
+                                                                    disabled={loading}
+                                                                >
+                                                                    보류
+                                                                </button>
+                                                                <button
+                                                                    style={styles.ghostButton}
+                                                                    onClick={() =>
+                                                                        handleEditTask(task)
+                                                                    }
+                                                                    disabled={loading}
+                                                                >
+                                                                    수정
+                                                                </button>
+                                                                <button
+                                                                    style={styles.dangerButton}
+                                                                    onClick={() =>
+                                                                        handleDeleteTask(task.id)
+                                                                    }
+                                                                    disabled={loading}
+                                                                >
+                                                                    삭제
+                                                                </button>
+                                                            </div>
+                                                        </>
+                                                    )}
+                                                </article>
+                                            );
+                                        })}
                                     </div>
                                 )}
                             </section>
