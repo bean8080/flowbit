@@ -759,48 +759,36 @@ export default function TaskList() {
                                             <p style={styles.empty}>아직 기록된 이벤트가 없습니다.</p>
                                         ) : (
                                             <div style={styles.timelineList}>
-                                                {openTimelineProjectId === project.id && (
-                                                    <div style={styles.insightBox}>
-                                                        <h3 style={styles.insightTitle}>프로젝트 타임라인</h3>
+                                                {Object.values(
+                                                    timeline.reduce((acc, event) => {
+                                                        if (!acc[event.taskId]) {
+                                                            acc[event.taskId] = {
+                                                                taskTitle: event.taskTitle,
+                                                                events: [],
+                                                            };
+                                                        }
 
-                                                        {timeline.length === 0 ? (
-                                                            <p style={styles.empty}>아직 기록된 이벤트가 없습니다.</p>
-                                                        ) : (
-                                                            <div style={styles.timelineList}>
-                                                                {Object.values(
-                                                                    timeline.reduce((acc, event) => {
-                                                                        if (!acc[event.taskId]) {
-                                                                            acc[event.taskId] = {
-                                                                                taskTitle: event.taskTitle,
-                                                                                events: [],
-                                                                            };
-                                                                        }
+                                                        acc[event.taskId].events.push(event);
+                                                        return acc;
+                                                    }, {} as Record<number, { taskTitle: string; events: ProjectTimelineEvent[] }>)
+                                                ).map((group, groupIndex) => (
+                                                    <div key={`${group.taskTitle}-${groupIndex}`} style={styles.timelineItem}>
+                                                        <p style={styles.timelineMain}>{group.taskTitle}</p>
 
-                                                                        acc[event.taskId].events.push(event);
-                                                                        return acc;
-                                                                    }, {} as Record<number, { taskTitle: string; events: ProjectTimelineEvent[] }>)
-                                                                ).map((group, groupIndex) => (
-                                                                    <div key={`${group.taskTitle}-${groupIndex}`} style={styles.timelineItem}>
-                                                                        <p style={styles.timelineMain}>{group.taskTitle}</p>
-
-                                                                        {group.events.map((event, eventIndex) => (
-                                                                            <p
-                                                                                key={`${event.eventId}-${eventIndex}`}
-                                                                                style={styles.timelineSub}
-                                                                            >
-                                                                                {formatDateTime(event.createdAt)} ·{" "}
-                                                                                {eventTypeLabelMap[event.eventType] ?? event.eventType}
-                                                                                {" · "}
-                                                                                {formatStatusFlow(event.fromStatus, event.toStatus)}
-                                                                                {event.description ? ` · ${event.description}` : ""}
-                                                                            </p>
-                                                                        ))}
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-                                                        )}
+                                                        {group.events.map((event, eventIndex) => (
+                                                            <p
+                                                                key={`${event.eventId}-${eventIndex}`}
+                                                                style={styles.timelineSub}
+                                                            >
+                                                                {formatDateTime(event.createdAt)} ·{" "}
+                                                                {eventTypeLabelMap[event.eventType] ?? event.eventType}
+                                                                {" · "}
+                                                                {formatStatusFlow(event.fromStatus, event.toStatus)}
+                                                                {event.description ? ` · ${event.description}` : ""}
+                                                            </p>
+                                                        ))}
                                                     </div>
-                                                )}
+                                                ))}
                                             </div>
                                         )}
                                     </div>
