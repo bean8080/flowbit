@@ -3,6 +3,8 @@ package com.ahyeon.flowbit.controller;
 import com.ahyeon.flowbit.domain.task.TaskService;
 import com.ahyeon.flowbit.domain.task.TaskStatus;
 import com.ahyeon.flowbit.domain.task.dto.TaskResponse;
+import com.ahyeon.flowbit.common.exception.GlobalExceptionHandler;
+import org.springframework.context.annotation.Import;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(TaskController.class)
 @AutoConfigureMockMvc(addFilters = false)
+@Import(GlobalExceptionHandler.class)
 class TaskControllerTest {
 
     @Autowired
@@ -123,5 +126,123 @@ class TaskControllerTest {
                 .andExpect(jsonPath("$.status").value("IN_PROGRESS"));
 
         verify(taskService).startTask(1L);
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 작업 조회 시 400을 반환한다")
+    void getTask_notFound() throws Exception {
+        when(taskService.getTask(999L))
+                .thenThrow(new IllegalArgumentException("작업을 찾을 수 없습니다."));
+
+        mockMvc.perform(get("/api/tasks/999"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("BAD_REQUEST"))
+                .andExpect(jsonPath("$.message").value("작업을 찾을 수 없습니다."))
+                .andExpect(jsonPath("$.timestamp").exists());
+
+        verify(taskService).getTask(999L);
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 작업 시작 시 400을 반환한다")
+    void startTask_notFound() throws Exception {
+        when(taskService.startTask(999L))
+                .thenThrow(new IllegalArgumentException("작업을 찾을 수 없습니다."));
+
+        mockMvc.perform(patch("/api/tasks/999/start"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("BAD_REQUEST"))
+                .andExpect(jsonPath("$.message").value("작업을 찾을 수 없습니다."))
+                .andExpect(jsonPath("$.timestamp").exists());
+
+        verify(taskService).startTask(999L);
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 작업 완료 시 400을 반환한다")
+    void completeTask_notFound() throws Exception {
+        when(taskService.completeTask(999L))
+                .thenThrow(new IllegalArgumentException("작업을 찾을 수 없습니다."));
+
+        mockMvc.perform(patch("/api/tasks/999/complete"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("BAD_REQUEST"))
+                .andExpect(jsonPath("$.message").value("작업을 찾을 수 없습니다."))
+                .andExpect(jsonPath("$.timestamp").exists());
+
+        verify(taskService).completeTask(999L);
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 작업 보류 시 400을 반환한다")
+    void blockTask_notFound() throws Exception {
+        when(taskService.blockTask(999L))
+                .thenThrow(new IllegalArgumentException("작업을 찾을 수 없습니다."));
+
+        mockMvc.perform(patch("/api/tasks/999/block"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("BAD_REQUEST"))
+                .andExpect(jsonPath("$.message").value("작업을 찾을 수 없습니다."))
+                .andExpect(jsonPath("$.timestamp").exists());
+
+        verify(taskService).blockTask(999L);
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 작업 삭제 시 400을 반환한다")
+    void deleteTask_notFound() throws Exception {
+        when(taskService.deleteTask(999L))
+                .thenThrow(new IllegalArgumentException("작업을 찾을 수 없습니다."));
+
+        mockMvc.perform(patch("/api/tasks/999/delete"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("BAD_REQUEST"))
+                .andExpect(jsonPath("$.message").value("작업을 찾을 수 없습니다."))
+                .andExpect(jsonPath("$.timestamp").exists());
+
+        verify(taskService).deleteTask(999L);
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 작업 이벤트 조회 시 400을 반환한다")
+    void getTaskEvents_notFound() throws Exception {
+        when(taskService.getTaskEvents(999L))
+                .thenThrow(new IllegalArgumentException("작업을 찾을 수 없습니다."));
+
+        mockMvc.perform(get("/api/tasks/999/events"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("BAD_REQUEST"))
+                .andExpect(jsonPath("$.message").value("작업을 찾을 수 없습니다."))
+                .andExpect(jsonPath("$.timestamp").exists());
+
+        verify(taskService).getTaskEvents(999L);
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 작업 타임라인 조회 시 400을 반환한다")
+    void getTimeline_notFound() throws Exception {
+        when(taskService.getTimeline(999L))
+                .thenThrow(new IllegalArgumentException("작업을 찾을 수 없습니다."));
+
+        mockMvc.perform(get("/api/tasks/999/timeline"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("BAD_REQUEST"))
+                .andExpect(jsonPath("$.message").value("작업을 찾을 수 없습니다."))
+                .andExpect(jsonPath("$.timestamp").exists());
+
+        verify(taskService).getTimeline(999L);
+    }
+
+    @Test
+    @DisplayName("잘못된 status 파라미터 요청 시 400을 반환한다")
+    void getTasks_invalidStatus() throws Exception {
+        mockMvc.perform(get("/api/tasks")
+                        .param("status", "INVALID_STATUS"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("BAD_REQUEST"))
+                .andExpect(jsonPath("$.message").value("요청 파라미터 값이 올바르지 않습니다."))
+                .andExpect(jsonPath("$.timestamp").exists());
+
+        verify(taskService, never()).getTasks(any(), any());
     }
 }
