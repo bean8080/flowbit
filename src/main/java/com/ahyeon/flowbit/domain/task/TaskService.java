@@ -7,6 +7,7 @@ import com.ahyeon.flowbit.domain.project.ProjectService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,6 +22,7 @@ public class TaskService {
     private final ProjectRepository projectRepository;
     private final ProjectService projectService;
 
+    @Transactional
     public TaskResponse createTask(CreateTaskRequest request) {
 
         LocalDateTime now = LocalDateTime.now();
@@ -61,6 +63,7 @@ public class TaskService {
         return new TaskResponse(savedTask);
     }
 
+    @Transactional
     @CacheEvict(value = "projectAnalysis", key = "#result.projectId")
     public TaskResponse updateTask(Long id, UpdateTaskRequest request) {
         Task task = taskRepository.findById(id)
@@ -71,6 +74,7 @@ public class TaskService {
         return new TaskResponse(task);
     }
 
+    @Transactional(readOnly = true)
     public List<TaskResponse> getTasks(TaskStatus status, Long projectId) {
         List<Task> tasks;
 
@@ -89,6 +93,7 @@ public class TaskService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public TaskResponse getTask(Long id) {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("작업을 찾을 수 없습니다."));
@@ -96,6 +101,7 @@ public class TaskService {
         return new TaskResponse(task);
     }
 
+    @Transactional
     @CacheEvict(value = "projectAnalysis", key = "#result.projectId")
     public TaskResponse startTask(Long id) {
         Task task = taskRepository.findById(id)
@@ -122,6 +128,7 @@ public class TaskService {
         return new TaskResponse(task);
     }
 
+    @Transactional(readOnly = true)
     public List<TaskEventResponse> getTaskEvents(Long taskId) {
         taskRepository.findById(taskId)
                 .orElseThrow(() -> new IllegalArgumentException("작업을 찾을 수 없습니다."));
@@ -132,6 +139,7 @@ public class TaskService {
                 .toList();
     }
 
+    @Transactional
     @CacheEvict(value = "projectAnalysis", key = "#result.projectId")
     public TaskResponse completeTask(Long id) {
         Task task = taskRepository.findById(id)
@@ -158,6 +166,7 @@ public class TaskService {
         return new TaskResponse(task);
     }
 
+    @Transactional
     @CacheEvict(value = "projectAnalysis", key = "#result.projectId")
     public TaskResponse blockTask(Long id) {
         Task task = taskRepository.findById(id)
@@ -184,6 +193,7 @@ public class TaskService {
         return new TaskResponse(task);
     }
 
+    @Transactional
     @CacheEvict(value = "projectAnalysis", key = "#result.projectId")
     public TaskResponse deleteTask(Long id) {
         Task task = taskRepository.findById(id)
@@ -210,6 +220,7 @@ public class TaskService {
         return new TaskResponse(task);
     }
 
+    @Transactional(readOnly = true)
     public String getLatestStatusFromEvents(Long taskId) {
         taskRepository.findById(taskId)
                 .orElseThrow(() -> new IllegalArgumentException("작업을 찾을 수 없습니다."));
@@ -220,6 +231,7 @@ public class TaskService {
         return latestEvent.getToStatus().name();
     }
 
+    @Transactional(readOnly = true)
     public List<TaskTimelineResponse> getTimeline(Long taskId) {
         taskRepository.findById(taskId)
                 .orElseThrow(() -> new IllegalArgumentException("작업을 찾을 수 없습니다."));

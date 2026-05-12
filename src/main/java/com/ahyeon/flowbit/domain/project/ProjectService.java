@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,6 +21,7 @@ public class ProjectService {
     private final TaskRepository taskRepository;
     private final TaskEventRepository taskEventRepository;
 
+    @Transactional
     public ProjectResponse createProject(CreateProjectRequest request) {
 
         Project project = new Project(
@@ -34,6 +36,7 @@ public class ProjectService {
         return new ProjectResponse(savedProject, List.of());
     }
 
+    @Transactional
     public List<ProjectResponse> getProjects() {
 
         getOrCreateDefaultProject();
@@ -56,6 +59,7 @@ public class ProjectService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public ProjectResponse getProject(Long id) {
 
         Project project = projectRepository.findById(id)
@@ -69,6 +73,7 @@ public class ProjectService {
         return new ProjectResponse(project, tasks);
     }
 
+    @Transactional
     public Project getOrCreateDefaultProject() {
 
         return projectRepository.findByName("DEFAULT")
@@ -83,6 +88,7 @@ public class ProjectService {
                 });
     }
 
+    @Transactional(readOnly = true)
     public List<ProjectTimelineResponse> getProjectTimeline(Long projectId) {
 
         projectRepository.findById(projectId)
@@ -112,6 +118,7 @@ public class ProjectService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     @Cacheable(value = "projectAnalysis", key = "#projectId")
     public ProjectAnalysisResponse getProjectAnalysis(Long projectId) {
 
@@ -155,6 +162,7 @@ public class ProjectService {
         );
     }
 
+    @Transactional
     @CacheEvict(value = "projectAnalysis", key = "#id")
     public ProjectResponse updateProject(Long id, UpdateProjectRequest request) {
 
@@ -175,6 +183,7 @@ public class ProjectService {
         return new ProjectResponse(project, tasks);
     }
 
+    @Transactional
     @CacheEvict(value = "projectAnalysis", key = "#id")
     public ProjectResponse deleteProject(Long id) {
 
