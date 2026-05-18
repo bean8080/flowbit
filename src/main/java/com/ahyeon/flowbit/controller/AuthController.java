@@ -2,6 +2,7 @@ package com.ahyeon.flowbit.controller;
 
 import com.ahyeon.flowbit.domain.auth.AuthService;
 import com.ahyeon.flowbit.domain.auth.dto.AuthResponse;
+import com.ahyeon.flowbit.domain.auth.dto.LoginRequest;
 import com.ahyeon.flowbit.domain.auth.dto.SignupRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -17,5 +18,10 @@ public class AuthController {
     @PostMapping("/signup")
     public AuthResponse signup(@RequestBody SignupRequest request) {
         return authService.signup(request);
+    }
+
+    @PostMapping("/login")
+    public AuthResponse login(@RequestBody LoginRequest request) {
+        return authService.login(request);
     }
 }

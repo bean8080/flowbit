@@ -153,3 +153,21 @@ Content-Type: application/json
   "password": "1234",
   "name": "백아현"
 }
+
+### 로그인
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "1234"
+}
+
+### 로그인 - 비밀번호 오류
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "wrong-password"
+}

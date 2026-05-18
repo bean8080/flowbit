@@ -1,6 +1,7 @@
 package com.ahyeon.flowbit.domain.auth;
 
 import com.ahyeon.flowbit.domain.auth.dto.AuthResponse;
+import com.ahyeon.flowbit.domain.auth.dto.LoginRequest;
 import com.ahyeon.flowbit.domain.auth.dto.SignupRequest;
 import com.ahyeon.flowbit.domain.user.User;
 import com.ahyeon.flowbit.domain.user.UserRepository;
@@ -36,5 +37,17 @@ public class AuthService {
         User savedUser = userRepository.save(user);
 
         return new AuthResponse(savedUser);
+    }
+
+    @Transactional(readOnly = true)
+    public AuthResponse login(LoginRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new IllegalArgumentException("이메일 또는 비밀번호가 올바르지 않습니다."));
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("이메일 또는 비밀번호가 올바르지 않습니다.");
+        }
+
+        return new AuthResponse(user);
     }
 }
