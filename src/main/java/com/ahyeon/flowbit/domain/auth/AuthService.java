@@ -2,6 +2,7 @@ package com.ahyeon.flowbit.domain.auth;
 
 import com.ahyeon.flowbit.domain.auth.dto.AuthResponse;
 import com.ahyeon.flowbit.domain.auth.dto.LoginRequest;
+import com.ahyeon.flowbit.domain.auth.dto.LoginResponse;
 import com.ahyeon.flowbit.domain.auth.dto.SignupRequest;
 import com.ahyeon.flowbit.domain.user.User;
 import com.ahyeon.flowbit.domain.user.UserRepository;
@@ -18,6 +19,7 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Transactional
     public AuthResponse signup(SignupRequest request) {
@@ -40,7 +42,7 @@ public class AuthService {
     }
 
     @Transactional(readOnly = true)
-    public AuthResponse login(LoginRequest request) {
+    public LoginResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("이메일 또는 비밀번호가 올바르지 않습니다."));
 
@@ -48,6 +50,8 @@ public class AuthService {
             throw new IllegalArgumentException("이메일 또는 비밀번호가 올바르지 않습니다.");
         }
 
-        return new AuthResponse(user);
+        String accessToken = jwtTokenProvider.createAccessToken(user);
+
+        return new LoginResponse(user, accessToken);
     }
 }
