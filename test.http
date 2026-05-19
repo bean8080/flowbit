@@ -171,3 +171,19 @@ Content-Type: application/json
   "email": "test@example.com",
   "password": "wrong-password"
 }
+
+### 토큰 없이 요청
+GET http://localhost:8080/api/tasks
+
+### 로그인 요청
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "hong@example.com",
+  "password": "1234"
+}
+
+### 토큰 넣고 요청
+GET http://localhost:8080/api/tasks
+Authorization: Bearer accessToken

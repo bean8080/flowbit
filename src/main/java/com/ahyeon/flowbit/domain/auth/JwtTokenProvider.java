@@ -1,6 +1,7 @@
 package com.ahyeon.flowbit.domain.auth;
 
 import com.ahyeon.flowbit.domain.user.User;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,5 +37,30 @@ public class JwtTokenProvider {
                 .expiration(expiration)
                 .signWith(key)
                 .compact();
+    }
+
+    public boolean validateToken(String token) {
+        try {
+            parseClaims(token);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public String getEmail(String token) {
+        return parseClaims(token).get("email", String.class);
+    }
+
+    public Long getUserId(String token) {
+        return Long.valueOf(parseClaims(token).getSubject());
+    }
+
+    private Claims parseClaims(String token) {
+        return Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
     }
 }
