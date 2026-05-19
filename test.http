@@ -184,6 +184,11 @@ Content-Type: application/json
   "password": "1234"
 }
 
-### 토큰 넣고 요청
+### 토큰 넣고 요청 - Task
 GET http://localhost:8080/api/tasks
+Authorization: Bearer accessToken
+
+
+### 토큰 넣고 요청 - User
+GET http://localhost:8080/api/users/me
 Authorization: Bearer accessToken
