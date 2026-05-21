@@ -7,6 +7,7 @@ import com.ahyeon.flowbit.domain.auth.dto.SignupRequest;
 import com.ahyeon.flowbit.domain.user.User;
 import com.ahyeon.flowbit.domain.user.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,11 +24,17 @@ public class AuthService {
 
     @Transactional
     public AuthResponse signup(SignupRequest request) {
+
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
+            throw new IllegalArgumentException(
+                    "이미 사용 중인 이메일입니다."
+            );
         }
 
-        String encodedPassword = passwordEncoder.encode(request.getPassword());
+        String encodedPassword =
+                passwordEncoder.encode(
+                        request.getPassword()
+                );
 
         User user = new User(
                 request.getEmail(),
@@ -36,9 +43,19 @@ public class AuthService {
                 LocalDateTime.now()
         );
 
-        User savedUser = userRepository.save(user);
+        try {
 
-        return new AuthResponse(savedUser);
+            User savedUser =
+                    userRepository.save(user);
+
+            return new AuthResponse(savedUser);
+
+        } catch (DataIntegrityViolationException e) {
+
+            throw new IllegalStateException(
+                    "이미 사용 중인 이메일입니다."
+            );
+        }
     }
 
     @Transactional(readOnly = true)
