@@ -112,6 +112,8 @@ public class TaskService {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("작업을 찾을 수 없습니다."));
 
+        Long currentUserId = currentUserProvider.getCurrentUserId();
+
         TaskStatus fromStatus = task.getStatus();
 
         LocalDateTime now = LocalDateTime.now();
@@ -125,7 +127,7 @@ public class TaskService {
                 TaskStatus.IN_PROGRESS,
                 "Task started",
                 now,
-                null
+                currentUserId
         );
 
         taskEventRepository.save(event);
@@ -150,6 +152,8 @@ public class TaskService {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("작업을 찾을 수 없습니다."));
 
+        Long currentUserId = currentUserProvider.getCurrentUserId();
+
         TaskStatus fromStatus = task.getStatus();
 
         LocalDateTime now = LocalDateTime.now();
@@ -163,7 +167,7 @@ public class TaskService {
                 TaskStatus.DONE,
                 "Task completed",
                 now,
-                null
+                currentUserId
         );
 
         taskEventRepository.save(event);
@@ -176,6 +180,8 @@ public class TaskService {
     public TaskResponse blockTask(Long id) {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("작업을 찾을 수 없습니다."));
+
+        Long currentUserId = currentUserProvider.getCurrentUserId();
 
         TaskStatus fromStatus = task.getStatus();
 
@@ -190,7 +196,7 @@ public class TaskService {
                 TaskStatus.BLOCKED,
                 "Task blocked",
                 now,
-                null
+                currentUserId
         );
 
         taskEventRepository.save(event);
@@ -203,6 +209,8 @@ public class TaskService {
     public TaskResponse deleteTask(Long id) {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("작업을 찾을 수 없습니다."));
+
+        Long currentUserId = currentUserProvider.getCurrentUserId();
 
         TaskStatus fromStatus = task.getStatus();
 
@@ -217,7 +225,7 @@ public class TaskService {
                 TaskStatus.DELETED,
                 "Task deleted",
                 now,
-                null
+                currentUserId
         );
 
         taskEventRepository.save(event);

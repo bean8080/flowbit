@@ -213,3 +213,24 @@ Authorization: Bearer accessToken
 ### 작업 이벤트 조회 - CREATED 이벤트 생성자 확인
 GET http://localhost:8080/api/tasks/14/events
 Authorization: Bearer accessToken
+
+### 작업 생성 - 테스트용 새 작업 생성
+POST http://localhost:8080/api/tasks
+Content-Type: application/json
+Authorization: Bearer accessToken
+
+{
+  "projectId": 1,
+  "title": "상태 변경 actor 테스트",
+  "description": "STARTED 이벤트 actor 확인",
+  "assigneeId": null,
+  "priority": 1
+}
+
+### 작업 시작 - STARTED 이벤트 actor 저장
+PATCH http://localhost:8080/api/tasks/15/start
+Authorization: Bearer accessToken
+
+### 작업 이벤트 조회 - 아직 응답에는 createdBy가 안 보일 수 있음
+GET http://localhost:8080/api/tasks/15/events
+Authorization: Bearer accessToken
