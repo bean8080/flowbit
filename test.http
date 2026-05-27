@@ -192,3 +192,24 @@ Authorization: Bearer accessToken
 ### 토큰 넣고 요청 - User
 GET http://localhost:8080/api/users/me
 Authorization: Bearer accessToken
+
+### 작업 생성 - 현재 로그인 사용자를 createdBy로 저장
+POST http://localhost:8080/api/tasks
+Content-Type: application/json
+Authorization: Bearer accessToken
+
+{
+  "projectId": 1,
+  "title": "actor 기록 테스트",
+  "description": "작업 생성자 저장 확인",
+  "assigneeId": null,
+  "priority": 1
+}
+
+### 작업 조회 - createdBy 확인
+GET http://localhost:8080/api/tasks/14
+Authorization: Bearer accessToken
+
+### 작업 이벤트 조회 - CREATED 이벤트 생성자 확인
+GET http://localhost:8080/api/tasks/14/events
+Authorization: Bearer accessToken

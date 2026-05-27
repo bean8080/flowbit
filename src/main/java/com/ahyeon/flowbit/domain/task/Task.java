@@ -44,14 +44,15 @@ public class Task {
     private LocalDateTime deletedAt; // 삭제 시점 (soft delete용, 실제 DB 삭제 안 함)
 
     public Task(Project project, String title, String description,
-                TaskStatus status, Long assigneeId, Integer priority,
-                LocalDateTime createdAt) {
+                TaskStatus status, Long assigneeId, Long createdBy,
+                Integer priority, LocalDateTime createdAt) {
 
         this.project = project;
         this.title = title;
         this.description = description;
         this.status = status;
         this.assigneeId = assigneeId;
+        this.createdBy = createdBy;
         this.priority = priority;
         this.createdAt = createdAt;
     }

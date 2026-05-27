@@ -1,5 +1,6 @@
 package com.ahyeon.flowbit.domain.task;
 
+import com.ahyeon.flowbit.domain.auth.CurrentUserProvider;
 import com.ahyeon.flowbit.domain.project.Project;
 import com.ahyeon.flowbit.domain.project.ProjectRepository;
 import com.ahyeon.flowbit.domain.task.dto.*;
@@ -21,11 +22,14 @@ public class TaskService {
     private final TaskEventRepository taskEventRepository;
     private final ProjectRepository projectRepository;
     private final ProjectService projectService;
+    private final CurrentUserProvider currentUserProvider;
 
     @Transactional
     public TaskResponse createTask(CreateTaskRequest request) {
 
         LocalDateTime now = LocalDateTime.now();
+
+        Long currentUserId = currentUserProvider.getCurrentUserId();
 
         Project project;
 
@@ -42,6 +46,7 @@ public class TaskService {
                 request.getDescription(),
                 TaskStatus.TODO,
                 request.getAssigneeId(),
+                currentUserId,
                 request.getPriority(),
                 now
         );
@@ -55,7 +60,7 @@ public class TaskService {
                 TaskStatus.TODO,
                 "Task created",
                 now,
-                null
+                currentUserId
         );
 
         taskEventRepository.save(event);

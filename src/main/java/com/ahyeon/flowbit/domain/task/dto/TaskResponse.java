@@ -15,6 +15,7 @@ public class TaskResponse {
     private String description;
     private String status;
     private Long assigneeId;
+    private Long createdBy;
     private Integer priority;
     private LocalDateTime createdAt;
     private LocalDateTime startedAt;
@@ -29,6 +30,7 @@ public class TaskResponse {
         this.description = task.getDescription();
         this.status = task.getStatus().name();
         this.assigneeId = task.getAssigneeId();
+        this.createdBy = task.getCreatedBy();
         this.priority = task.getPriority();
         this.createdAt = task.getCreatedAt();
         this.startedAt = task.getStartedAt();
