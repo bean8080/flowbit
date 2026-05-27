@@ -238,3 +238,7 @@ Authorization: Bearer accessToken
 ### 작업 타임라인 조회 - actor 정보 확인
 GET http://localhost:8080/api/tasks/14/timeline
 Authorization: Bearer accessToken
+
+### 프로젝트 타임라인 조회 - actor 정보 확인
+GET http://localhost:8080/api/projects/1/timeline
+Authorization: Bearer accessToken

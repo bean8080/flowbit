@@ -1,6 +1,7 @@
 package com.ahyeon.flowbit.domain.project.dto;
 
 import com.ahyeon.flowbit.domain.task.TaskEvent;
+import com.ahyeon.flowbit.domain.user.User;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
@@ -16,8 +17,11 @@ public class ProjectTimelineResponse {
     private String toStatus;
     private String description;
     private LocalDateTime createdAt;
+    private Long createdBy;
+    private String actorName;
+    private String actorEmail;
 
-    public ProjectTimelineResponse(TaskEvent event, String taskTitle) {
+    public ProjectTimelineResponse(TaskEvent event, String taskTitle, User actor) {
         this.eventId = event.getId();
         this.taskId = event.getTaskId();
         this.taskTitle = taskTitle;
@@ -26,5 +30,8 @@ public class ProjectTimelineResponse {
         this.toStatus = event.getToStatus() == null ? null : event.getToStatus().name();
         this.description = event.getDescription();
         this.createdAt = event.getCreatedAt();
+        this.createdBy = event.getCreatedBy();
+        this.actorName = actor == null ? null : actor.getName();
+        this.actorEmail = actor == null ? null : actor.getEmail();
     }
 }

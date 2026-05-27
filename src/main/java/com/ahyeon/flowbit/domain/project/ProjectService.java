@@ -2,6 +2,8 @@ package com.ahyeon.flowbit.domain.project;
 
 import com.ahyeon.flowbit.domain.project.dto.*;
 import com.ahyeon.flowbit.domain.task.*;
+import com.ahyeon.flowbit.domain.user.User;
+import com.ahyeon.flowbit.domain.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -11,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,6 +23,7 @@ public class ProjectService {
     private final ProjectRepository projectRepository;
     private final TaskRepository taskRepository;
     private final TaskEventRepository taskEventRepository;
+    private final UserRepository userRepository;
 
     @Transactional
     public ProjectResponse createProject(CreateProjectRequest request) {
@@ -110,10 +114,13 @@ public class ProjectService {
                 ? List.of()
                 : taskEventRepository.findByTaskIdInOrderByCreatedAtAsc(taskIds);
 
+        Map<Long, User> userMap = getUserMapByEvents(events);
+
         return events.stream()
                 .map(event -> new ProjectTimelineResponse(
                         event,
-                        taskMap.get(event.getTaskId())
+                        taskMap.get(event.getTaskId()),
+                        userMap.get(event.getCreatedBy())
                 ))
                 .toList();
     }
@@ -214,5 +221,17 @@ public class ProjectService {
         return (int) tasks.stream()
                 .filter(task -> task.getStatus() == status)
                 .count();
+    }
+
+    private Map<Long, User> getUserMapByEvents(List<TaskEvent> events) {
+        List<Long> userIds = events.stream()
+                .map(TaskEvent::getCreatedBy)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+
+        return userRepository.findAllById(userIds)
+                .stream()
+                .collect(Collectors.toMap(User::getId, user -> user));
     }
 }
