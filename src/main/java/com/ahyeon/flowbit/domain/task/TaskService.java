@@ -5,6 +5,8 @@ import com.ahyeon.flowbit.domain.project.Project;
 import com.ahyeon.flowbit.domain.project.ProjectRepository;
 import com.ahyeon.flowbit.domain.task.dto.*;
 import com.ahyeon.flowbit.domain.project.ProjectService;
+import com.ahyeon.flowbit.domain.user.User;
+import com.ahyeon.flowbit.domain.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
@@ -13,6 +15,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +28,7 @@ public class TaskService {
     private final ProjectRepository projectRepository;
     private final ProjectService projectService;
     private final CurrentUserProvider currentUserProvider;
+    private final UserRepository userRepository;
 
     @Transactional
     public TaskResponse createTask(CreateTaskRequest request) {
@@ -140,9 +146,15 @@ public class TaskService {
         taskRepository.findById(taskId)
                 .orElseThrow(() -> new IllegalArgumentException("작업을 찾을 수 없습니다."));
 
-        return taskEventRepository.findByTaskIdOrderByCreatedAtAsc(taskId)
-                .stream()
-                .map(TaskEventResponse::new)
+        List<TaskEvent> events = taskEventRepository.findByTaskIdOrderByCreatedAtAsc(taskId);
+
+        Map<Long, User> userMap = getUserMapByEvents(events);
+
+        return events.stream()
+                .map(event -> new TaskEventResponse(
+                        event,
+                        userMap.get(event.getCreatedBy())
+                ))
                 .toList();
     }
 
@@ -251,14 +263,34 @@ public class TaskService {
 
         List<TaskEvent> events = taskEventRepository.findByTaskIdOrderByCreatedAtAsc(taskId);
 
+        Map<Long, User> userMap = getUserMapByEvents(events);
+
         List<TaskTimelineResponse> timeline = new ArrayList<>();
 
         for (int i = 0; i < events.size(); i++) {
             LocalDateTime previousOccurredAt = i == 0 ? null : events.get(i - 1).getCreatedAt();
 
-            timeline.add(new TaskTimelineResponse(events.get(i), previousOccurredAt));
+            TaskEvent event = events.get(i);
+
+            timeline.add(new TaskTimelineResponse(
+                    event,
+                    previousOccurredAt,
+                    userMap.get(event.getCreatedBy())
+            ));
         }
 
         return timeline;
+    }
+
+    private Map<Long, User> getUserMapByEvents(List<TaskEvent> events) {
+        List<Long> userIds = events.stream()
+                .map(TaskEvent::getCreatedBy)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+
+        return userRepository.findAllById(userIds)
+                .stream()
+                .collect(Collectors.toMap(User::getId, user -> user));
     }
 }

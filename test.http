@@ -231,6 +231,10 @@ Authorization: Bearer accessToken
 PATCH http://localhost:8080/api/tasks/15/start
 Authorization: Bearer accessToken
 
-### 작업 이벤트 조회 - 아직 응답에는 createdBy가 안 보일 수 있음
+### 작업 이벤트 조회 - 아직 응답에는 createdBy가 보인당
 GET http://localhost:8080/api/tasks/15/events
+Authorization: Bearer accessToken
+
+### 작업 타임라인 조회 - actor 정보 확인
+GET http://localhost:8080/api/tasks/14/timeline
 Authorization: Bearer accessToken
