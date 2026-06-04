@@ -19,7 +19,7 @@ public class TaskTimelineResponse {
     private String summary;
     private LocalDateTime occurredAt;
     private Long minutesFromPreviousEvent;
-    private Long createdBy;
+    private Long actorId;
     private String actorName;
     private String actorEmail;
 
@@ -33,8 +33,8 @@ public class TaskTimelineResponse {
         this.summary = createSummary();
         this.occurredAt = event.getCreatedAt();
         this.minutesFromPreviousEvent = calculateMinutesFromPreviousEvent(previousOccurredAt);
-        this.createdBy = event.getCreatedBy();
-        this.actorName = actor == null ? null : actor.getName();
+        this.actorId = event.getCreatedBy();
+        this.actorName = actor == null ? "Unknown User" : actor.getName();
         this.actorEmail = actor == null ? null : actor.getEmail();
     }
 

@@ -16,7 +16,7 @@ public class TaskEventResponse {
     private String toStatus;
     private String description;
     private LocalDateTime createdAt;
-    private Long createdBy;
+    private Long actorId;
     private String actorName;
     private String actorEmail;
 
@@ -28,8 +28,8 @@ public class TaskEventResponse {
         this.toStatus = event.getToStatus().name();
         this.description = event.getDescription();
         this.createdAt = event.getCreatedAt();
-        this.createdBy = event.getCreatedBy();
-        this.actorName = actor == null ? null : actor.getName();
+        this.actorId = event.getCreatedBy();
+        this.actorName = actor == null ? "Unknown User" : actor.getName();
         this.actorEmail = actor == null ? null : actor.getEmail();
     }
 }
