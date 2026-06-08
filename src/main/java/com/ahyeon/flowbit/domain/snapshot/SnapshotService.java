@@ -33,8 +33,11 @@ public class SnapshotService {
     private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
-    public ProjectSnapshotResponse getProjectSnapshot(Long projectId, LocalDateTime at) {
-
+    public ProjectSnapshotResponse getProjectSnapshot(
+            Long projectId,
+            LocalDateTime at,
+            boolean includeDeleted
+    ) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new IllegalArgumentException("프로젝트를 찾을 수 없습니다."));
 
@@ -45,6 +48,7 @@ public class SnapshotService {
                     project.getId(),
                     project.getName(),
                     at,
+                    0,
                     0,
                     0,
                     0,
@@ -89,7 +93,7 @@ public class SnapshotService {
         for (TaskEvent latestEvent : latestEventByTaskId.values()) {
             TaskStatus snapshotStatus = latestEvent.getToStatus();
 
-            if (snapshotStatus == TaskStatus.DELETED) {
+            if (snapshotStatus == TaskStatus.DELETED && !includeDeleted) {
                 continue;
             }
 
@@ -116,6 +120,7 @@ public class SnapshotService {
         int inProgressCount = countByStatus(taskSnapshots, TaskStatus.IN_PROGRESS);
         int blockedCount = countByStatus(taskSnapshots, TaskStatus.BLOCKED);
         int doneCount = countByStatus(taskSnapshots, TaskStatus.DONE);
+        int deletedCount = countByStatus(taskSnapshots, TaskStatus.DELETED);
 
         return new ProjectSnapshotResponse(
                 project.getId(),
@@ -126,6 +131,7 @@ public class SnapshotService {
                 inProgressCount,
                 blockedCount,
                 doneCount,
+                deletedCount,
                 taskSnapshots
         );
     }

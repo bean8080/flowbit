@@ -17,6 +17,7 @@ public class ProjectSnapshotResponse {
     private int inProgressCount;
     private int blockedCount;
     private int doneCount;
+    private int deletedCount;
 
     private List<TaskSnapshotResponse> tasks;
 
@@ -29,6 +30,7 @@ public class ProjectSnapshotResponse {
             int inProgressCount,
             int blockedCount,
             int doneCount,
+            int deletedCount,
             List<TaskSnapshotResponse> tasks
     ) {
         this.projectId = projectId;
@@ -39,6 +41,7 @@ public class ProjectSnapshotResponse {
         this.inProgressCount = inProgressCount;
         this.blockedCount = blockedCount;
         this.doneCount = doneCount;
+        this.deletedCount = deletedCount;
         this.tasks = tasks;
     }
 }

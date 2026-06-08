@@ -21,8 +21,10 @@ public class SnapshotController {
             @PathVariable Long projectId,
             @RequestParam
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-            LocalDateTime at
+            LocalDateTime at,
+            @RequestParam(defaultValue = "false")
+            boolean includeDeleted
     ) {
-        return snapshotService.getProjectSnapshot(projectId, at);
+        return snapshotService.getProjectSnapshot(projectId, at, includeDeleted);
     }
 }

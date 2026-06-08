@@ -246,3 +246,11 @@ Authorization: Bearer accessToken
 ### 프로젝트 스냅샷 조회 - 현재 시점 기준
 GET http://localhost:8080/api/projects/1/snapshot?at=2026-06-08T23:59:59
 Authorization: Bearer accessToken
+
+### 프로젝트 스냅샷 조회 - 삭제 제외 기본값
+GET http://localhost:8080/api/projects/1/snapshot?at=2099-12-31T23:59:59
+Authorization: Bearer accessToken
+
+### 프로젝트 스냅샷 조회 - 삭제 포함
+GET http://localhost:8080/api/projects/1/snapshot?at=2099-12-31T23:59:59&includeDeleted=true
+Authorization: Bearer accessToken
