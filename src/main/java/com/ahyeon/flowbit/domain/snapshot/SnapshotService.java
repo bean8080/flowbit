@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -115,6 +116,8 @@ public class SnapshotService {
                     actor == null ? null : actor.getEmail()
             ));
         }
+
+        taskSnapshots.sort(Comparator.comparing(TaskSnapshotResponse::getTaskId));
 
         int todoCount = countByStatus(taskSnapshots, TaskStatus.TODO);
         int inProgressCount = countByStatus(taskSnapshots, TaskStatus.IN_PROGRESS);
