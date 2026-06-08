@@ -242,3 +242,7 @@ Authorization: Bearer accessToken
 ### 프로젝트 타임라인 조회 - actor 정보 확인
 GET http://localhost:8080/api/projects/1/timeline
 Authorization: Bearer accessToken
+
+### 프로젝트 스냅샷 조회 - 현재 시점 기준
+GET http://localhost:8080/api/projects/1/snapshot?at=2026-06-08T23:59:59
+Authorization: Bearer accessToken
