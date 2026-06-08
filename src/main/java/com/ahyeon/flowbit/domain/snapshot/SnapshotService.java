@@ -9,6 +9,8 @@ import com.ahyeon.flowbit.domain.task.TaskEvent;
 import com.ahyeon.flowbit.domain.task.TaskEventRepository;
 import com.ahyeon.flowbit.domain.task.TaskRepository;
 import com.ahyeon.flowbit.domain.task.TaskStatus;
+import com.ahyeon.flowbit.domain.user.User;
+import com.ahyeon.flowbit.domain.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,6 +30,7 @@ public class SnapshotService {
     private final ProjectRepository projectRepository;
     private final TaskRepository taskRepository;
     private final TaskEventRepository taskEventRepository;
+    private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
     public ProjectSnapshotResponse getProjectSnapshot(Long projectId, LocalDateTime at) {
@@ -69,6 +73,17 @@ public class SnapshotService {
             latestEventByTaskId.put(event.getTaskId(), event);
         }
 
+        List<Long> actorIds = latestEventByTaskId.values()
+                .stream()
+                .map(TaskEvent::getCreatedBy)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+
+        Map<Long, User> userMap = userRepository.findAllById(actorIds)
+                .stream()
+                .collect(Collectors.toMap(User::getId, user -> user));
+
         List<TaskSnapshotResponse> taskSnapshots = new ArrayList<>();
 
         for (TaskEvent latestEvent : latestEventByTaskId.values()) {
@@ -84,11 +99,16 @@ public class SnapshotService {
                 continue;
             }
 
+            User actor = userMap.get(latestEvent.getCreatedBy());
+
             taskSnapshots.add(new TaskSnapshotResponse(
                     task.getId(),
                     task.getTitle(),
                     snapshotStatus.name(),
-                    latestEvent.getCreatedAt()
+                    latestEvent.getCreatedAt(),
+                    latestEvent.getCreatedBy(),
+                    actor == null ? "Unknown User" : actor.getName(),
+                    actor == null ? null : actor.getEmail()
             ));
         }
 
